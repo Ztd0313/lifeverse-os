@@ -10,17 +10,20 @@
  * - 修订号：Bug 修复和小优化
  */
 
-export const APP_VERSION = 'v5.4.1';
+export const APP_VERSION = 'v5.5.0';
 
 export const VERSION_INFO = {
   version: APP_VERSION,
   buildDate: '2026-06-23',
   codename: 'Life OS',
   changes: [
-    '修复重逢对话时间标签翻译键值裸露问题（past-10/past-5/future-5/future-10）',
-    '修复AI回复语言与界面语言不匹配问题（全链路locale传递+语言指令）',
-    '所有AI API路由追加语言控制指令（zh/en/ja/ko）',
-    'langgraph-engine 6个节点均追加语言指令',
+    'Agent创建支持上传聊天记录截图，AI自动分析人物特征',
+    '人物市场新增100位名人大师角色卡',
+    '上线记忆回放功能（/memory/replay）',
+    '上线梦想档案功能（/dream）— 记录梦想/梦想时间轴/与儿时的自己对话',
+    '上线历史模块会议记录详情页（/history/[id]）',
+    '历史记录删除增加二次确认弹窗',
+    '个人中心拥有Agent卡片支持点击跳转到我的Agent页面',
   ],
 };
 
