@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
@@ -88,6 +89,7 @@ export function MemoryDetail({
   onClose,
   onOpenDialogue,
 }: MemoryDetailProps) {
+  const router = useRouter();
   const [toast, setToast] = useState<string | null>(null);
 
   /** 显示 mock 提示（自动消失） */
@@ -104,6 +106,12 @@ export function MemoryDetail({
     } else {
       showToast('记忆对话功能需要从记忆星球页面打开');
     }
+  };
+
+  /** 处理"记忆回放"按钮点击：关闭详情弹窗后跳转到回放页面 */
+  const handleReplay = () => {
+    onClose();
+    router.push('/memory/replay');
   };
 
   return (
@@ -305,9 +313,7 @@ export function MemoryDetail({
                   variant="gold"
                   size="md"
                   type="button"
-                  onClick={() =>
-                    showToast('记忆回放功能即将上线，敬请期待')
-                  }
+                  onClick={handleReplay}
                 >
                   <Play size={16} />
                   记忆回放
