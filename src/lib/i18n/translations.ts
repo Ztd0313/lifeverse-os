@@ -520,6 +520,8 @@ export const zhTranslations: TranslationDict = {
     backCouncil: '返回议会',
     headerTitle: '未来议会',
     generateReport: '生成未来推演报告',
+    loading: '正在召唤时间议会...',
+    mockBadge: '演示数据 · 未接入真实 AI',
   },
   memory: {
     title: '记忆星球',
@@ -1163,6 +1165,8 @@ export const enTranslations: TranslationDict = {
     backCouncil: 'Back to Council',
     headerTitle: 'Future Council',
     generateReport: 'Generate Future Report',
+    loading: 'Summoning the time council...',
+    mockBadge: 'Demo data · Real AI not connected',
   },
   memory: {
     title: 'Memory Planet',
@@ -1801,6 +1805,8 @@ export const jaTranslations: TranslationDict = {
     backCouncil: '議会に戻る',
     headerTitle: '未来議会',
     generateReport: '未来推演レポートを生成',
+    loading: '時間議会を召喚しています...',
+    mockBadge: 'デモデータ · 実AI未接続',
   },
   memory: {
     title: '記憶の星',
@@ -2438,6 +2444,8 @@ export const koTranslations: TranslationDict = {
     backCouncil: '의회로 돌아가기',
     headerTitle: '미래 의회',
     generateReport: '미래 탐색 보고서 생성',
+    loading: '시간 의회를 소환하는 중...',
+    mockBadge: '데모 데이터 · 실제 AI 미연결',
   },
   memory: {
     title: '기억의 별',
