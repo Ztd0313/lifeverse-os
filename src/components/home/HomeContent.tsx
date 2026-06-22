@@ -16,66 +16,69 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { useTranslation } from '@/lib/i18n';
 
 /**
  * 七大模块定义
+ *
+ * nameKey / nameEnKey / descKey 对应 i18n 翻译路径
  */
 interface ModuleItem {
   icon: LucideIcon;
-  name: string;
-  nameEn: string;
-  description: string;
+  nameKey: string;
+  nameEnKey: string;
+  descKey: string;
   href: string;
 }
 
 const MODULES: ModuleItem[] = [
   {
     icon: Globe,
-    name: '记忆星球',
-    nameEn: 'Memory Planet',
-    description: '将照片、文字、语音组织成结构化记忆与人生地图，让过去有形状。',
+    nameKey: 'home.modules.memoryPlanet.name',
+    nameEnKey: 'home.modules.memoryPlanet.nameEn',
+    descKey: 'home.modules.memoryPlanet.description',
     href: '/memory',
   },
   {
     icon: Sparkles,
-    name: '梦想档案',
-    nameEn: 'Dream Archive',
-    description: '记录儿时梦想，生成梦想时间轴，与儿时的自己重逢对话。',
+    nameKey: 'home.modules.dreamArchive.name',
+    nameEnKey: 'home.modules.dreamArchive.nameEn',
+    descKey: 'home.modules.dreamArchive.description',
     href: '/dream',
   },
   {
     icon: Brain,
-    name: '内心世界',
-    nameEn: 'Inner World',
-    description: '6 个内心人格共存，检测冲突与渴望，看见自己的全貌。',
+    nameKey: 'home.modules.innerWorld.name',
+    nameEnKey: 'home.modules.innerWorld.nameEn',
+    descKey: 'home.modules.innerWorld.description',
     href: '/inner',
   },
   {
     icon: Users,
-    name: '智慧议会',
-    nameEn: 'Wisdom Council',
-    description: '召集 7 位智者，多元视角辩论，生成命运报告与共识方案。',
+    nameKey: 'home.modules.wisdomCouncil.name',
+    nameEnKey: 'home.modules.wisdomCouncil.nameEn',
+    descKey: 'home.modules.wisdomCouncil.description',
     href: '/council/wisdom',
   },
   {
     icon: Clock,
-    name: '未来议会',
-    nameEn: 'Future Council',
-    description: '20 岁、当前、50 岁、80 岁的自己同时发言，推演未来路径。',
+    nameKey: 'home.modules.futureCouncil.name',
+    nameEnKey: 'home.modules.futureCouncil.nameEn',
+    descKey: 'home.modules.futureCouncil.description',
     href: '/council/future',
   },
   {
     icon: HeartHandshake,
-    name: '重逢',
-    nameEn: 'Reunion',
-    description: '与已经离开的人重逢，完成未完成的对话，温柔地告别。',
+    nameKey: 'home.modules.reunion.name',
+    nameEnKey: 'home.modules.reunion.nameEn',
+    descKey: 'home.modules.reunion.description',
     href: '/reunion',
   },
   {
     icon: History,
-    name: '历史',
-    nameEn: 'History',
-    description: '所有模块的事件汇成生命时间线与生命星图，回溯生命轨迹。',
+    nameKey: 'home.modules.history.name',
+    nameEnKey: 'home.modules.history.nameEn',
+    descKey: 'home.modules.history.description',
     href: '/history',
   },
 ];
@@ -122,6 +125,8 @@ const cardItem: Variants = {
  * 使用 Framer Motion 做入场动画（fadeIn + slideUp）。
  */
 export function HomeContent() {
+  const { t } = useTranslation();
+
   return (
     <main className="relative z-10">
       {/* ===== Hero 区域 ===== */}
@@ -135,7 +140,7 @@ export function HomeContent() {
           {/* 顶部小标签 */}
           <motion.div variants={fadeInUp}>
             <span className="interactive inline-flex items-center rounded-full border border-gold-dim bg-gold-soft px-4 py-1 text-xs tracking-widest text-gold">
-              AI 生命操作系统
+              {t('home.badge')}
             </span>
           </motion.div>
 
@@ -144,7 +149,7 @@ export function HomeContent() {
             variants={fadeInUp}
             className="h-display text-[80px] leading-none text-gradient-gold sm:text-[96px] md:text-[120px]"
           >
-            LifeVerse
+            {t('home.title')}
           </motion.h1>
 
           {/* 英文副标题 */}
@@ -152,7 +157,7 @@ export function HomeContent() {
             variants={fadeInUp}
             className="h-subtitle text-xl text-text-soft sm:text-2xl"
           >
-            Every life deserves its own universe.
+            {t('home.subtitleEn')}
           </motion.p>
 
           {/* 中文副标题 */}
@@ -160,7 +165,7 @@ export function HomeContent() {
             variants={fadeInUp}
             className="text-lg text-text sm:text-xl"
           >
-            生命宇宙 · 和塑造你的人，一起决定未来
+            {t('home.subtitleZh')}
           </motion.p>
 
           {/* 描述文字 */}
@@ -168,8 +173,7 @@ export function HomeContent() {
             variants={fadeInUp}
             className="max-w-2xl text-sm leading-relaxed text-text-soft sm:text-base"
           >
-            把记忆、情感、梦想、关系与决策，组织成一个可被觉察、可被推演、可被重逢的私人宇宙。
-            在重大选择时，与智慧、记忆和未来版本的自己共同对话。
+            {t('home.description')}
           </motion.p>
 
           {/* 按钮组 */}
@@ -178,13 +182,13 @@ export function HomeContent() {
             className="mt-4 flex flex-col gap-4 sm:flex-row"
           >
             <Button asChild variant="gold" size="lg">
-              <Link href="/council" aria-label="进入议会入口，开始命运议会">
-                开始命运议会
+              <Link href="/council" aria-label={t('home.startButton')}>
+                {t('home.startButton')}
               </Link>
             </Button>
             <Button asChild variant="secondary" size="lg">
-              <Link href="#modules" aria-label="滚动到七大模块区域，了解更多">
-                了解更多
+              <Link href="#modules" aria-label={t('home.learnMore')}>
+                {t('home.learnMore')}
               </Link>
             </Button>
           </motion.div>
@@ -207,14 +211,13 @@ export function HomeContent() {
             variants={fadeInUp}
             className="h-title text-4xl text-gradient-gold sm:text-5xl"
           >
-            七大模块
+            {t('home.modulesTitle')}
           </motion.h2>
           <motion.p
             variants={fadeInUp}
             className="max-w-2xl text-center text-sm text-text-soft sm:text-base"
           >
-            它们不是平行的功能，而是一个有机的整体——输入、处理、输出三层协同，
-            构成你的生命宇宙。
+            {t('home.modulesDescription')}
           </motion.p>
         </motion.div>
 
@@ -229,7 +232,7 @@ export function HomeContent() {
           {MODULES.map((module) => {
             const Icon = module.icon;
             return (
-              <motion.div key={module.name} variants={cardItem}>
+              <motion.div key={module.nameKey} variants={cardItem}>
                 <Card className="group h-full card-hover hover-lift">
                   <Link
                     href={module.href}
@@ -243,16 +246,16 @@ export function HomeContent() {
                     {/* 名称 */}
                     <div className="flex flex-col gap-1">
                       <h3 className="text-lg font-semibold text-text">
-                        {module.name}
+                        {t(module.nameKey)}
                       </h3>
                       <span className="text-sm font-medium text-gold">
-                        {module.nameEn}
+                        {t(module.nameEnKey)}
                       </span>
                     </div>
 
                     {/* 描述 */}
                     <p className="flex-1 text-sm leading-relaxed text-text-soft">
-                      {module.description}
+                      {t(module.descKey)}
                     </p>
                   </Link>
                 </Card>
@@ -284,15 +287,14 @@ export function HomeContent() {
               <div className="flex-1 space-y-2">
                 <div className="flex flex-col gap-1">
                   <h3 className="text-xl font-semibold text-text">
-                    人物市场
+                    {t('home.marketplaceCard.title')}
                   </h3>
                   <span className="text-sm font-medium text-gold">
-                    Agent Marketplace
+                    {t('home.marketplaceCard.nameEn')}
                   </span>
                 </div>
                 <p className="text-sm leading-relaxed text-text-soft">
-                  解锁更多智者，扩展你的议会。与达芬奇、爱因斯坦、孔子、尼采等智者对话，
-                  让更多视角照亮你的人生决策。
+                  {t('home.marketplaceCard.description')}
                 </p>
               </div>
 
@@ -318,7 +320,7 @@ export function HomeContent() {
           className="mx-auto max-w-3xl text-center"
         >
           <p className="h-display text-3xl leading-relaxed text-gradient-gold sm:text-4xl">
-            “每一个生命，都值得拥有自己的宇宙。”
+            {t('home.quote')}
           </p>
         </motion.blockquote>
       </section>
