@@ -11,15 +11,18 @@ import { ParticleBackground } from '@/components/effects/ParticleBackground';
 import { Header } from '@/components/layout/Header';
 import { fadeInUp, staggerContainer } from '@/lib/motion/variants';
 import { useAuthStore } from '@/stores/auth-store';
+import { useTranslation } from '@/lib/i18n';
 
 /**
  * 议会入口卡片定义
+ *
+ * nameKey / nameEnKey / descKey 对应 i18n 翻译路径
  */
 interface CouncilEntry {
   icon: LucideIcon;
-  name: string;
-  nameEn: string;
-  description: string;
+  nameKey: string;
+  nameEnKey: string;
+  descKey: string;
   href: string;
   accent: string;
 }
@@ -27,17 +30,17 @@ interface CouncilEntry {
 const COUNCIL_ENTRIES: CouncilEntry[] = [
   {
     icon: Users,
-    name: '智慧议会',
-    nameEn: 'Wisdom Council',
-    description: '召集 7 位智者，多元视角辩论，生成命运报告与共识方案',
+    nameKey: 'council.wisdomCouncil',
+    nameEnKey: 'home.modules.wisdomCouncil.nameEn',
+    descKey: 'home.modules.wisdomCouncil.description',
     href: '/council/wisdom',
     accent: '#c9a84c',
   },
   {
     icon: Clock,
-    name: '未来议会',
-    nameEn: 'Future Council',
-    description: '20 岁、当前、50 岁、80 岁的自己同时发言，推演未来路径',
+    nameKey: 'council.futureCouncil',
+    nameEnKey: 'home.modules.futureCouncil.nameEn',
+    descKey: 'home.modules.futureCouncil.description',
     href: '/council/future',
     accent: '#5da0e8',
   },
@@ -65,6 +68,7 @@ export default function CouncilHubPage() {
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated, isInitialized, checkAuth } = useAuthStore();
+  const { t } = useTranslation();
 
   /** 首次加载时校验登录态 */
   React.useEffect(() => {
@@ -87,7 +91,7 @@ export default function CouncilHubPage() {
         <main className="relative z-10 flex min-h-screen items-center justify-center">
           <div className="flex flex-col items-center gap-4 text-text-soft">
             <Loader2 size={32} className="animate-spin text-gold" />
-            <p className="text-sm">正在验证登录状态...</p>
+            <p className="text-sm">{t('council.verifying')}</p>
           </div>
         </main>
       </>
@@ -115,7 +119,7 @@ export default function CouncilHubPage() {
             <Button asChild variant="ghost" size="sm">
               <Link href="/">
                 <ArrowLeft className="h-4 w-4" />
-                返回首页
+                {t('council.backHome')}
               </Link>
             </Button>
           </motion.div>
@@ -123,7 +127,7 @@ export default function CouncilHubPage() {
           {/* 标题区 */}
           <motion.div variants={fadeInUp} className="mb-4 text-center">
             <span className="inline-flex items-center rounded-full border border-gold-dim bg-gold-soft px-4 py-1 text-xs tracking-widest text-gold">
-              命运议会
+              {t('council.destinyCouncil')}
             </span>
           </motion.div>
 
@@ -131,16 +135,16 @@ export default function CouncilHubPage() {
             variants={fadeInUp}
             className="h-display text-5xl text-gradient-gold sm:text-6xl md:text-7xl"
           >
-            Councils
+            {t('council.title')}
           </motion.h1>
 
           <motion.p
             variants={fadeInUp}
             className="mt-4 max-w-2xl text-center text-sm leading-relaxed text-text-soft sm:text-base"
           >
-            在重大选择时，召集不同的声音与你共同对话。
+            {t('council.description')}
             <br />
-            智者给你视角，未来的你给你时间。
+            {t('council.description2')}
           </motion.p>
 
           {/* 议会入口卡片 */}
@@ -151,7 +155,7 @@ export default function CouncilHubPage() {
             {COUNCIL_ENTRIES.map((entry) => {
               const Icon = entry.icon;
               return (
-                <motion.div key={entry.name} variants={cardItem}>
+                <motion.div key={entry.nameKey} variants={cardItem}>
                   <Card className="group h-full">
                     <Link
                       href={entry.href}
@@ -168,21 +172,21 @@ export default function CouncilHubPage() {
                       {/* 名称 */}
                       <div className="flex flex-col gap-1">
                         <h2 className="text-xl font-semibold text-text">
-                          {entry.name}
+                          {t(entry.nameKey)}
                         </h2>
                         <span className="text-sm font-medium text-gold">
-                          {entry.nameEn}
+                          {t(entry.nameEnKey)}
                         </span>
                       </div>
 
                       {/* 描述 */}
                       <p className="flex-1 text-sm leading-relaxed text-text-soft">
-                        {entry.description}
+                        {t(entry.descKey)}
                       </p>
 
                       {/* 进入提示 */}
                       <div className="mt-2 flex items-center gap-1.5 text-xs text-text-dim transition-colors group-hover:text-gold">
-                        <span>进入议会</span>
+                        <span>{t('council.enterCouncil')}</span>
                         <ArrowLeft className="h-3 w-3 rotate-180 transition-transform group-hover:translate-x-1" />
                       </div>
                     </Link>
@@ -198,7 +202,7 @@ export default function CouncilHubPage() {
             className="mt-20 max-w-2xl text-center"
           >
             <p className="h-title text-2xl leading-relaxed text-text-soft sm:text-3xl">
-              &ldquo;每一个重大决定，都值得被多个时间维度的自己审视。&rdquo;
+              {t('council.quote')}
             </p>
           </motion.blockquote>
         </motion.div>
