@@ -86,12 +86,12 @@ export async function POST(
     // TODO: 对接阿里云短信服务实际发送短信
     // await aliyunSmsClient.send(phone, `您的验证码是 ${code}，5 分钟内有效`);
 
-    // ===== 开发环境返回验证码便于测试 =====
-    const isDev = process.env.NODE_ENV !== 'production';
-
+    // ===== 始终返回验证码便于测试 =====
+    // 当前为测试阶段，生产环境也返回验证码，方便用户体验
+    // 正式上线短信服务后可移除 debugCode
     return NextResponse.json({
       success: true,
-      ...(isDev ? { debugCode: code } : {}),
+      debugCode: code,
     });
   } catch (error) {
     console.error('[SMS Send API] 发送验证码失败：', error);
