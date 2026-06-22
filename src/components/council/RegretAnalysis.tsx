@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, type Variants } from 'framer-motion';
 import { Sunrise, Heart, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 
 /**
  * 后悔类型
@@ -20,40 +21,40 @@ export type RegretType =
  */
 interface RegretTypeConfig {
   type: RegretType;
-  label: string;
-  description: string;
+  labelKey: string;
+  descKey: string;
   color: string;
 }
 
 const REGRET_TYPE_CONFIGS: RegretTypeConfig[] = [
   {
     type: 'action',
-    label: '行动后悔',
-    description: '做了之后觉得不该做',
+    labelKey: 'council.regret.typeAction',
+    descKey: 'council.regret.typeActionDesc',
     color: '#e8a05d',
   },
   {
     type: 'inaction',
-    label: '不行动后悔',
-    description: '没做之后觉得该做',
+    labelKey: 'council.regret.typeInaction',
+    descKey: 'council.regret.typeInactionDesc',
     color: '#5da0e8',
   },
   {
     type: 'speed',
-    label: '速度后悔',
-    description: '太快或太慢的节奏',
+    labelKey: 'council.regret.typeSpeed',
+    descKey: 'council.regret.typeSpeedDesc',
     color: '#b8a0c8',
   },
   {
     type: 'direction',
-    label: '方向后悔',
-    description: '走错了路而非走慢了',
+    labelKey: 'council.regret.typeDirection',
+    descKey: 'council.regret.typeDirectionDesc',
     color: '#e85d5d',
   },
   {
     type: 'relationship',
-    label: '关系后悔',
-    description: '忽略了重要的人',
+    labelKey: 'council.regret.typeRelationship',
+    descKey: 'council.regret.typeRelationshipDesc',
     color: '#5de8a0',
   },
 ];
@@ -180,6 +181,7 @@ interface RegretBarProps {
 }
 
 function RegretBar({ option, delay }: RegretBarProps) {
+  const { t } = useTranslation();
   const regretConfig = REGRET_TYPE_CONFIGS.find(
     (c) => c.type === option.primaryRegret
   );
@@ -206,7 +208,7 @@ function RegretBar({ option, delay }: RegretBarProps) {
           </span>
           {regretConfig && (
             <span className="text-[10px] text-text-dim">
-              {regretConfig.label}
+              {t(regretConfig.labelKey)}
             </span>
           )}
         </div>
@@ -268,6 +270,7 @@ export function RegretAnalysis({
   options,
   className,
 }: RegretAnalysisProps) {
+  const { t } = useTranslation();
   const [reflectionDone, setReflectionDone] = useState(false);
 
   return (
@@ -281,7 +284,7 @@ export function RegretAnalysis({
       <motion.div variants={itemVariants} className="mb-5 flex items-center gap-2">
         <Sunrise className="h-5 w-5 text-gold" />
         <h3 className="font-serif text-xl text-text">
-          <span className="text-gradient-gold">80 岁的回望</span>
+          <span className="text-gradient-gold">{t('council.regret.title')}</span>
         </h3>
       </motion.div>
 
@@ -294,7 +297,7 @@ export function RegretAnalysis({
         <div className="relative">
           <div className="mb-3 flex items-center gap-2">
             <span className="text-lg">🌅</span>
-            <span className="text-xs text-text-dim">80 岁的自己说：</span>
+            <span className="text-xs text-text-dim">{t('council.regret.selfSays')}</span>
           </div>
           <ReflectionTyping text={reflection} onDone={() => setReflectionDone(true)} />
         </div>
@@ -304,7 +307,7 @@ export function RegretAnalysis({
       <motion.div variants={itemVariants} className="mb-4">
         <div className="mb-3 flex items-center gap-2">
           <AlertCircle className="h-4 w-4 text-text-dim" />
-          <h4 className="text-sm font-semibold text-text">两个选择的后悔概率</h4>
+          <h4 className="text-sm font-semibold text-text">{t('council.regret.regretComparison')}</h4>
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <RegretBar option={options[0]} delay={0.3} />
@@ -316,7 +319,7 @@ export function RegretAnalysis({
       <motion.div variants={itemVariants}>
         <div className="mb-3 flex items-center gap-2">
           <Heart className="h-4 w-4 text-text-dim" />
-          <h4 className="text-sm font-semibold text-text">可能的后悔类型</h4>
+          <h4 className="text-sm font-semibold text-text">{t('council.regret.regretTypes')}</h4>
         </div>
         <div className="flex flex-wrap gap-2">
           {REGRET_TYPE_CONFIGS.map((config) => {
@@ -354,11 +357,11 @@ export function RegretAnalysis({
                     className="text-xs font-medium"
                     style={{ color: isHighlighted ? config.color : '#9a9a9a' }}
                   >
-                    {config.label}
+                    {t(config.labelKey)}
                   </span>
                 </div>
                 <p className="mt-0.5 text-[10px] text-text-dim">
-                  {config.description}
+                  {t(config.descKey)}
                 </p>
               </motion.div>
             );
@@ -371,7 +374,7 @@ export function RegretAnalysis({
         variants={itemVariants}
         className="mt-6 text-center text-sm text-text-dim"
       >
-        &ldquo;后悔不是失败，它是 80 岁的你给现在的你最温柔的提醒。&rdquo;
+        &ldquo;{t('council.regret.closingQuote')}&rdquo;
       </motion.p>
     </motion.div>
   );
