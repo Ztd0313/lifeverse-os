@@ -113,6 +113,31 @@ export const useI18nStore = create<I18nStore>()(
 );
 
 /**
+ * 非 hook 版本的翻译函数
+ *
+ * 用于 Zustand store 等无法使用 React hook 的场景。
+ * 直接从 i18n store 的 state 中获取 locale 和翻译字典，返回 t 函数。
+ *
+ * 使用方式：
+ * ```ts
+ * import { getT } from '@/stores/i18n-store';
+ * const t = getT();
+ * const msg = t('auth.notLoggedIn');
+ * ```
+ */
+export function getT(): (key: string, vars?: Record<string, string | number>) => string {
+  const { locale } = useI18nStore.getState();
+  const dict = TRANSLATIONS[locale] ?? zhTranslations;
+  return (key: string, vars?: Record<string, string | number>) => {
+    const value = getValueByPath(dict, key);
+    if (value === null) {
+      return key;
+    }
+    return interpolate(value, vars);
+  };
+}
+
+/**
  * 将当前 locale 同步到 document.documentElement 的 lang 属性。
  *
  * 在客户端组件挂载时调用，确保 SSR 后 lang 属性能正确同步到 DOM。
