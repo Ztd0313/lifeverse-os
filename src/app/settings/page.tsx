@@ -1,10 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
-  ArrowLeft,
   Moon,
   Sun,
   Users,
@@ -87,7 +85,6 @@ function SettingRow({ label, description, children }: SettingRowProps) {
 // ===== Main Page =====
 
 export default function SettingsPage() {
-  const router = useRouter();
   const { t } = useTranslation();
 
   // Theme（来自 theme-store，持久化到 localStorage）
@@ -240,14 +237,7 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-bg">
       {/* Top bar */}
       <header className="sticky top-0 z-20 border-b border-border bg-[var(--header-bg-scrolled)] backdrop-blur-md">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
-          <button
-            onClick={() => router.push('/')}
-            className="inline-flex items-center gap-1.5 text-sm text-text-soft transition-colors hover:text-gold"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            {t('settings.backHome')}
-          </button>
+        <div className="mx-auto flex max-w-3xl items-center justify-end px-4 py-3">
           <span className="text-sm font-medium text-text">{t('settings.title')}</span>
         </div>
       </header>
