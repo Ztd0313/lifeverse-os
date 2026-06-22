@@ -3,6 +3,7 @@ import {
   chatCompletion,
   isOpenAIConfigured,
   DEFAULT_MODEL,
+  getLanguageInstruction,
 } from '@/lib/ai/openai-client';
 import type { MemoryItem } from '@/types';
 
@@ -42,6 +43,7 @@ interface MemoryDialogueRequestBody {
   memory?: unknown;
   message?: unknown;
   history?: unknown;
+  locale?: unknown;
 }
 
 /**
@@ -120,7 +122,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     );
   }
 
-  const { memory, message, history } = body;
+  const { memory, message, history, locale } = body;
 
   // 2. 参数校验
   if (
@@ -159,7 +161,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   // 4. 调用 DeepSeek 生成回复
   try {
-    const systemPrompt = buildSystemPrompt(memoryItem);
+    const systemPrompt = buildSystemPrompt(memoryItem) + '\n\n' + getLanguageInstruction(typeof locale === 'string' ? locale : 'zh');
 
     // 将对话历史拼接到 user message 中（DeepSeek 单轮调用）
     const historyStr =
