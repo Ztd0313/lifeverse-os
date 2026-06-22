@@ -16,6 +16,55 @@
   --gold-soft: rgba(201, 168, 76, 0.2);
   --gold-dim: #8a7430;
   --gold-hover: #d9b85e;
+
+  /* 深空蓝 */
+  --space-blue: #1a1f3a;
+  --space-blue-soft: rgba(26, 31, 58, 0.3);
+  --space-blue-dim: #0f1428;
+  --space-blue-bright: #3d5af1;
+
+  /* 生命紫 */
+  --life-purple: #9d4edd;
+  --life-purple-soft: rgba(157, 78, 221, 0.2);
+  --life-purple-dim: #6b2c8f;
+  --life-purple-bright: #c77dff;
+
+  /* 星耀金（增强现有金色） */
+  --star-gold: #ffd700;
+  --star-gold-soft: rgba(255, 215, 0, 0.15);
+
+  /* 字体层级 Token */
+  --font-display-size: 3.5rem;
+  --font-display-weight: 700;
+  --font-display-line-height: 1.1;
+  --font-title-size: 2rem;
+  --font-title-weight: 600;
+  --font-title-line-height: 1.3;
+  --font-subtitle-size: 1.25rem;
+  --font-subtitle-weight: 400;
+  --font-subtitle-line-height: 1.5;
+  --font-body-size: 1rem;
+  --font-body-weight: 400;
+  --font-body-line-height: 1.75;
+  --font-caption-size: 0.75rem;
+  --font-caption-weight: 500;
+  --font-caption-line-height: 1.4;
+
+  /* 间距 Token */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2.5rem;
+  --space-2xl: 4rem;
+
+  /* 圆角 Token */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-full: 9999px;
+
   --red: #e85d5d;
   --blue: #5da0e8;
   --green: #5de8a0;
@@ -56,6 +105,19 @@
   --gold-soft: rgba(168, 137, 60, 0.12);
   --gold-dim: #8a7430;
   --gold-hover: #b8964a;
+
+  /* 深空蓝（浅色主题） */
+  --space-blue: #e8eaf6;
+  --space-blue-soft: rgba(232, 234, 246, 0.5);
+  --space-blue-dim: #c5cae9;
+
+  /* 生命紫（浅色主题） */
+  --life-purple: #7b2cbf;
+  --life-purple-soft: rgba(123, 44, 191, 0.12);
+
+  /* 星耀金（浅色主题） */
+  --star-gold: #b8860b;
+
   --red: #d44a4a;
   --blue: #4a8ec8;
   --green: #4aa868;
@@ -360,4 +422,61 @@ body {
 [data-theme='light'] canvas[aria-hidden='true'] {
   opacity: var(--particle-opacity);
   transition: opacity 0.3s ease;
+}
+
+/* ===== 触摸交互优化 ===== */
+
+/* 触摸设备移除 hover 效果，改用 active */
+@media (hover: none) and (pointer: coarse) {
+  .hover-lift:hover,
+  .card-hover:hover,
+  .interactive:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .hover-lift:active,
+  .card-hover:active,
+  .interactive:active {
+    transform: scale(0.97);
+    transition: transform 0.1s ease;
+  }
+}
+
+/* 触摸目标最小尺寸（44px iOS 标准） */
+@media (hover: none) and (pointer: coarse) {
+  button,
+  a[role="button"],
+  .interactive {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* 底部导航栏安全区 */
+.bottom-nav-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* 移动端减少动画（性能优化） */
+@media (max-width: 768px) {
+  .particle-canvas {
+    opacity: 0.6;
+  }
+}
+
+/* 移动端底部导航栏占位 */
+@media (max-width: 1023px) {
+  main {
+    padding-bottom: 80px;
+  }
+}
+
+/* 主题切换平滑过渡 */
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease, fill 0.4s ease, stroke 0.4s ease !important;
+  transition-delay: 0 !important;
 }
