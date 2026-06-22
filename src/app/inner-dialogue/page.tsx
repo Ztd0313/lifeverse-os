@@ -20,16 +20,13 @@ import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth-store';
 import { useMembershipStore, getTierConfig } from '@/stores/membership-store';
+import { useTranslation } from '@/lib/i18n';
 import Link from 'next/link';
 
 // ===== 常量 =====
 
 /** localStorage 键名：保存对话历史 */
 const STORAGE_KEY = 'lifeverse-inner-dialogue-history';
-
-/** 引导语：首次进入时显示 */
-const WELCOME_MESSAGE =
-  '你好，我是你内心的声音。在这里，你可以放下所有伪装，和我聊聊你真正的想法。不用急着表达完整，也不用担心被评判——我就在这里，慢慢听你说。';
 
 // ===== 类型定义 =====
 
@@ -130,6 +127,7 @@ function clearHistory(): void {
 export default function InnerDialoguePage() {
   const router = useRouter();
   const pathname = usePathname();
+  const { t } = useTranslation();
   const { isAuthenticated, isInitialized, checkAuth, token } = useAuthStore();
   const { canInnerDialogue, recordInnerDialogue, membership } =
     useMembershipStore();
@@ -168,7 +166,7 @@ export default function InnerDialoguePage() {
           {
             id: 'welcome',
             role: 'assistant',
-            content: WELCOME_MESSAGE,
+            content: t('innerDialogue.welcomeMessage'),
             emotionTag: '温暖',
             timestamp: Date.now(),
           },
@@ -269,7 +267,7 @@ export default function InnerDialoguePage() {
             ? {
                 ...m,
                 content:
-                  '抱歉，我暂时无法回应你。请稍后再试——你的心声，我一直都在听。',
+                  t('innerDialogue.errorMessage'),
                 emotionTag: '感伤',
                 timestamp: Date.now(),
               }
@@ -302,7 +300,7 @@ export default function InnerDialoguePage() {
       {
         id: 'welcome',
         role: 'assistant',
-        content: WELCOME_MESSAGE,
+        content: t('innerDialogue.welcomeMessage'),
         emotionTag: '温暖',
         timestamp: Date.now(),
       },
@@ -318,7 +316,7 @@ export default function InnerDialoguePage() {
         <main className="relative z-10 flex min-h-screen items-center justify-center">
           <div className="flex flex-col items-center gap-4 text-text-soft">
             <Loader2 size={32} className="animate-spin text-gold" />
-            <p className="text-sm">正在验证登录状态...</p>
+            <p className="text-sm">{t('innerDialogue.verifying')}</p>
           </div>
         </main>
       </>
@@ -342,7 +340,7 @@ export default function InnerDialoguePage() {
               <button
                 onClick={() => router.push('/')}
                 className="flex h-9 w-9 items-center justify-center rounded-full text-text-soft transition-colors hover:bg-bg-card hover:text-gold"
-                aria-label="返回首页"
+                aria-label={t('innerDialogue.backHome')}
               >
                 <ArrowLeft size={18} />
               </button>
@@ -352,10 +350,10 @@ export default function InnerDialoguePage() {
                 </span>
                 <div>
                   <h1 className="text-sm font-semibold text-text">
-                    内心对话
+                    {t('innerDialogue.title')}
                   </h1>
                   <p className="text-[11px] text-text-dim">
-                    与内心的自己对话，看见真实的你
+                    {t('innerDialogue.subtitle')}
                   </p>
                 </div>
               </div>
@@ -365,7 +363,7 @@ export default function InnerDialoguePage() {
               {dialogueCheck.remaining === -1 ? (
                 <span className="inline-flex items-center gap-1 rounded-full border border-[rgba(184,160,200,0.3)] bg-[rgba(184,160,200,0.12)] px-2.5 py-1 text-[11px] font-medium text-[#b8a0c8]">
                   <Zap size={11} />
-                  无限对话
+                  {t('innerDialogue.unlimited')}
                 </span>
               ) : (
                 <span
@@ -378,11 +376,11 @@ export default function InnerDialoguePage() {
                 >
                   {dialogueCheck.remaining === 0 ? (
                     <>
-                      <Lock size={11} />
-                      今日已用完
-                    </>
-                  ) : (
-                    <>今日剩余 {dialogueCheck.remaining} 次</>
+                        <Lock size={11} />
+                        {t('innerDialogue.usedUp')}
+                      </>
+                    ) : (
+                      <>{t('innerDialogue.remaining', { count: dialogueCheck.remaining })}</>
                   )}
                 </span>
               )}
@@ -392,15 +390,15 @@ export default function InnerDialoguePage() {
                   className="interactive inline-flex items-center gap-1 rounded-full border border-gold-dim bg-gold-soft/50 px-2.5 py-1 text-[11px] font-medium text-gold transition-colors hover:bg-gold-soft"
                 >
                   <Zap size={11} />
-                  升级会员
+                  {t('innerDialogue.upgrade')}
                 </Link>
               )}
               <button
                 onClick={handleClear}
                 disabled={isLoading}
                 className="flex h-9 w-9 items-center justify-center rounded-full text-text-soft transition-colors hover:bg-bg-card hover:text-red disabled:opacity-50"
-                aria-label="清空对话"
-                title="清空对话"
+                aria-label={t('innerDialogue.clearChat')}
+                title={t('innerDialogue.clearChatTitle')}
               >
                 <Trash2 size={16} />
               </button>
@@ -422,11 +420,10 @@ export default function InnerDialoguePage() {
                   <Lock size={14} className="shrink-0 text-red" />
                   <div>
                     <p className="text-xs font-medium text-text">
-                      今日对话次数已用完
+                      {t('innerDialogue.quotaExhausted')}
                     </p>
                     <p className="text-[10px] text-text-dim">
-                      {getTierConfig(membership.tier).name} · 每日{' '}
-                      {dialogueCheck.limit} 次 · 明日 0:00 重置
+                      {getTierConfig(membership.tier).name} · {t('innerDialogue.quotaDetail', { tier: getTierConfig(membership.tier).name, limit: dialogueCheck.limit })}
                     </p>
                   </div>
                 </div>
@@ -435,7 +432,7 @@ export default function InnerDialoguePage() {
                   className="interactive inline-flex shrink-0 items-center gap-1 rounded-full bg-gold px-3 py-1.5 text-xs font-semibold text-bg transition-colors hover:bg-gold-dim"
                 >
                   <Zap size={12} />
-                  升级会员
+                  {t('innerDialogue.upgrade')}
                 </Link>
               </div>
             </motion.div>
@@ -482,7 +479,7 @@ export default function InnerDialoguePage() {
                             ease: 'easeInOut',
                           }}
                         >
-                          内心正在倾听
+                          {t('innerDialogue.listening')}
                         </motion.span>
                         <motion.span
                           animate={{ opacity: [0.4, 1, 0.4] }}
@@ -550,7 +547,7 @@ export default function InnerDialoguePage() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="和内心的自己说点什么..."
+                placeholder={t('innerDialogue.placeholder')}
                 rows={1}
                 disabled={isLoading}
                 className={cn(
@@ -571,7 +568,7 @@ export default function InnerDialoguePage() {
                 onClick={handleSend}
                 disabled={!input.trim() || isLoading}
                 className="shrink-0"
-                aria-label="发送"
+                aria-label={t('innerDialogue.send')}
               >
                 {isLoading ? (
                   <Loader2 size={16} className="animate-spin" />
@@ -581,7 +578,7 @@ export default function InnerDialoguePage() {
               </Button>
             </div>
             <p className="mt-2 text-[10px] text-text-dim">
-              Enter 发送 · Shift + Enter 换行 · 对话仅保存在本地浏览器
+              {t('innerDialogue.inputHint')}
             </p>
           </div>
         </motion.div>
