@@ -141,7 +141,7 @@ export function Header() {
           <Link
             href="/"
             className="group flex items-center gap-2 transition-opacity group-hover:opacity-80"
-            aria-label="LifeVerse 首页"
+            aria-label={t('nav.homePage')}
           >
             <Logo size="md" />
           </Link>
@@ -149,7 +149,7 @@ export function Header() {
           {/* 中间：桌面端导航链接 */}
           <nav
             className="hidden items-center gap-6 lg:flex"
-            aria-label="主导航"
+            aria-label={t('nav.mainNav')}
           >
             {NAV_LINKS.map((link) => (
               <Link
@@ -221,7 +221,7 @@ export function Header() {
                   type="button"
                   onClick={() => setUserMenuOpen((prev) => !prev)}
                   className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 transition-all hover:bg-bg-card"
-                  aria-label="用户菜单"
+                  aria-label={t('nav.userMenu')}
                   aria-expanded={userMenuOpen}
                   aria-haspopup="menu"
                 >
@@ -361,7 +361,7 @@ export function Header() {
               className="fixed right-0 top-0 z-[70] flex h-screen w-72 max-w-[85vw] flex-col border-l border-border bg-bg-soft lg:hidden"
               role="dialog"
               aria-modal="true"
-              aria-label="移动端导航菜单"
+              aria-label={t('nav.mobileNavMenu')}
             >
               {/* 抽屉头部 */}
               <div className="flex h-16 items-center justify-between border-b border-border px-6">
