@@ -19,6 +19,7 @@ import {
 } from '@/lib/marketplace-data';
 import { useMarketplaceStore } from '@/stores/marketplace-store';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 
 /**
  * 人物市场页面
@@ -33,6 +34,7 @@ import { cn } from '@/lib/utils';
  * 深色主题，金色点缀，使用 Framer Motion 动画。
  */
 export default function MarketplacePage() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = React.useState<MarketFilterTab>('all');
   const [previewAgent, setPreviewAgent] = React.useState<MarketplaceAgent | null>(null);
 
@@ -73,15 +75,15 @@ export default function MarketplacePage() {
 
             {/* 标题 */}
             <h1 className="h-display text-5xl text-gradient-gold sm:text-6xl">
-              人物市场
+              {t('marketplace.title')}
             </h1>
             <p className="h-subtitle text-lg text-text-soft sm:text-xl">
-              Marketplace
+              {t('marketplace.subtitle')}
             </p>
 
             {/* 副标题 */}
             <p className="mt-2 text-base text-text sm:text-lg">
-              解锁更多智者，扩展你的议会
+              {t('marketplace.description')}
             </p>
           </motion.div>
         </section>
@@ -144,7 +146,7 @@ export default function MarketplacePage() {
           {/* 空状态 */}
           {filteredAgents.length === 0 && (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <p className="text-sm text-text-dim">该分类暂无 Agent</p>
+              <p className="text-sm text-text-dim">{t('marketplace.emptyCategory')}</p>
             </div>
           )}
         </section>
@@ -156,21 +158,21 @@ export default function MarketplacePage() {
               <p className="font-serif text-2xl font-semibold text-gold">
                 {MARKETPLACE_AGENTS.length}
               </p>
-              <p className="text-xs text-text-dim">位智者</p>
+              <p className="text-xs text-text-dim">{t('marketplace.sagesCount')}</p>
             </div>
             <div className="h-8 w-px bg-border" />
             <div>
               <p className="font-serif text-2xl font-semibold text-gold">
                 {MARKETPLACE_AGENTS.filter((a) => a.isFree).length}
               </p>
-              <p className="text-xs text-text-dim">位免费</p>
+              <p className="text-xs text-text-dim">{t('marketplace.freeCount')}</p>
             </div>
             <div className="h-8 w-px bg-border" />
             <div>
               <p className="font-serif text-2xl font-semibold text-gold">
                 {MARKETPLACE_AGENTS.filter((a) => a.isLimited).length}
               </p>
-              <p className="text-xs text-text-dim">位限定</p>
+              <p className="text-xs text-text-dim">{t('marketplace.limitedCount')}</p>
             </div>
           </div>
         </section>
@@ -188,7 +190,7 @@ export default function MarketplacePage() {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full border border-gold-dim bg-bg-card text-gold shadow-[0_0_24px_var(--shadow-gold)] transition-all hover:bg-gold-soft/30"
-        aria-label="打开购物车"
+        aria-label={t('marketplace.openCart')}
       >
         <ShoppingBag className="h-6 w-6" />
         {cartCount > 0 && (
