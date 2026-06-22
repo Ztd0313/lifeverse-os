@@ -22,6 +22,7 @@ import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth-store';
 import { useMembershipStore, getTierConfig } from '@/stores/membership-store';
+import { useTranslation } from '@/lib/i18n';
 import Link from 'next/link';
 
 // ===== 常量 =====
@@ -142,24 +143,6 @@ function calculateAge(birthday?: string): number {
 }
 
 /**
- * 根据时间方向和偏移生成引导语
- */
-function buildWelcomeMessage(
-  direction: TimeDirection,
-  yearsOffset: number,
-  currentAge: number
-): string {
-  const targetAge =
-    direction === 'past' ? currentAge - yearsOffset : currentAge + yearsOffset;
-
-  if (direction === 'past') {
-    return `嗨，我是 ${yearsOffset} 年前的你。那时候的你，还在 ${targetAge} 岁，满脑子都是梦想和可能性。看到现在的你，我既好奇又有点心疼——后来的我，变成了什么样？还在追逐当初的梦想吗？来，和我聊聊吧。`;
-  }
-
-  return `你好，我是 ${yearsOffset} 年后的你。现在的我，已经 ${targetAge} 岁了。看到你正在为这些事纠结，我忍不住想笑——因为从我站的地方看去，很多焦虑其实都不重要了。你会没事的，真的。来，和未来的自己聊聊吧。`;
-}
-
-/**
  * 获取 localStorage 键名（按时间点区分）
  */
 function getStorageKey(optionId: string): string {
@@ -231,6 +214,7 @@ function clearHistory(optionId: string): void {
 export default function ReunionDialoguePage() {
   const router = useRouter();
   const pathname = usePathname();
+  const { t } = useTranslation();
   const { user, isAuthenticated, isInitialized, checkAuth, token } = useAuthStore();
   const { canInnerDialogue, recordReunionDialogue, membership } =
     useMembershipStore();
@@ -273,7 +257,7 @@ export default function ReunionDialoguePage() {
       const yearsOffset = Math.abs(targetAge - currentAge);
       return {
         id: 'custom',
-        label: `${customYear} 年`,
+        label: t('reunionDialogue.customYearLabel', { year: customYear }),
         direction,
         yearsOffset,
         icon: direction === 'past' ? '🕰️' : '🔮',
@@ -295,11 +279,11 @@ export default function ReunionDialoguePage() {
     } else {
       // 首次进入该时间点，显示引导语
       const currentAge = calculateAge(user?.birthday);
-      const welcome = buildWelcomeMessage(
-        currentTimeOption.direction,
-        currentTimeOption.yearsOffset,
-        currentAge
-      );
+      const targetAge =
+        currentTimeOption.direction === 'past' ? currentAge - currentTimeOption.yearsOffset : currentAge + currentTimeOption.yearsOffset;
+      const welcome = currentTimeOption.direction === 'past'
+        ? t('reunionDialogue.welcomePast', { years: currentTimeOption.yearsOffset, age: targetAge })
+        : t('reunionDialogue.welcomeFuture', { years: currentTimeOption.yearsOffset, age: targetAge });
       setMessages([
         {
           id: 'welcome',
@@ -413,7 +397,7 @@ export default function ReunionDialoguePage() {
             ? {
                 ...m,
                 content:
-                  '抱歉，我暂时无法回应你。请稍后再试——我在时间的另一端，等你。',
+                  t('reunionDialogue.errorMessage'),
                 emotionTag: '感伤',
                 timePerspective: '时间暂时模糊',
                 timestamp: Date.now(),
@@ -456,11 +440,11 @@ export default function ReunionDialoguePage() {
   const handleClear = () => {
     clearHistory(currentTimeOption.id);
     const currentAge = calculateAge(user?.birthday);
-    const welcome = buildWelcomeMessage(
-      currentTimeOption.direction,
-      currentTimeOption.yearsOffset,
-      currentAge
-    );
+    const targetAge =
+      currentTimeOption.direction === 'past' ? currentAge - currentTimeOption.yearsOffset : currentAge + currentTimeOption.yearsOffset;
+    const welcome = currentTimeOption.direction === 'past'
+      ? t('reunionDialogue.welcomePast', { years: currentTimeOption.yearsOffset, age: targetAge })
+      : t('reunionDialogue.welcomeFuture', { years: currentTimeOption.yearsOffset, age: targetAge });
     setMessages([
       {
         id: 'welcome',
@@ -485,7 +469,7 @@ export default function ReunionDialoguePage() {
         <main className="relative z-10 flex min-h-screen items-center justify-center">
           <div className="flex flex-col items-center gap-4 text-text-soft">
             <Loader2 size={32} className="animate-spin text-gold" />
-            <p className="text-sm">正在验证登录状态...</p>
+            <p className="text-sm">{t('reunionDialogue.verifying')}</p>
           </div>
         </main>
       </>
@@ -510,7 +494,7 @@ export default function ReunionDialoguePage() {
                 <button
                   onClick={() => router.push('/')}
                   className="flex h-9 w-9 items-center justify-center rounded-full text-text-soft transition-colors hover:bg-bg-card hover:text-gold"
-                  aria-label="返回首页"
+                  aria-label={t('reunionDialogue.backHome')}
                 >
                   <ArrowLeft size={18} />
                 </button>
@@ -520,10 +504,10 @@ export default function ReunionDialoguePage() {
                   </span>
                   <div>
                     <h1 className="text-sm font-semibold text-text">
-                      重逢对话
+                      {t('reunionDialogue.title')}
                     </h1>
                     <p className="text-[11px] text-text-dim">
-                      与过去或未来的自己重逢
+                      {t('reunionDialogue.subtitle')}
                     </p>
                   </div>
                 </div>
@@ -533,7 +517,7 @@ export default function ReunionDialoguePage() {
                 {dialogueCheck.remaining === -1 ? (
                   <span className="inline-flex items-center gap-1 rounded-full border border-[rgba(184,160,200,0.3)] bg-[rgba(184,160,200,0.12)] px-2.5 py-1 text-[11px] font-medium text-[#b8a0c8]">
                     <Zap size={11} />
-                    无限对话
+                    {t('reunionDialogue.unlimited')}
                   </span>
                 ) : (
                   <span
@@ -547,10 +531,10 @@ export default function ReunionDialoguePage() {
                     {dialogueCheck.remaining === 0 ? (
                       <>
                         <Lock size={11} />
-                        今日已用完
+                        {t('reunionDialogue.usedUp')}
                       </>
                     ) : (
-                      <>今日剩余 {dialogueCheck.remaining} 次</>
+                      <>{t('reunionDialogue.remaining', { count: dialogueCheck.remaining })}</>
                     )}
                   </span>
                 )}
@@ -560,15 +544,15 @@ export default function ReunionDialoguePage() {
                     className="interactive inline-flex items-center gap-1 rounded-full border border-gold-dim bg-gold-soft/50 px-2.5 py-1 text-[11px] font-medium text-gold transition-colors hover:bg-gold-soft"
                   >
                     <Zap size={11} />
-                    升级会员
+                    {t('reunionDialogue.upgrade')}
                   </Link>
                 )}
                 <button
                   onClick={handleClear}
                   disabled={isLoading}
                   className="flex h-9 w-9 items-center justify-center rounded-full text-text-soft transition-colors hover:bg-bg-card hover:text-red disabled:opacity-50"
-                  aria-label="清空对话"
-                  title="清空对话"
+                  aria-label={t('reunionDialogue.clearChat')}
+                  title={t('reunionDialogue.clearChatTitle')}
                 >
                   <Trash2 size={16} />
                 </button>
@@ -590,7 +574,7 @@ export default function ReunionDialoguePage() {
                   )}
                 >
                   <span aria-hidden="true">{option.icon}</span>
-                  {option.label}
+                  {t(`reunionDialogue.timeOptions.${option.id}` as const)}
                 </button>
               ))}
 
@@ -606,7 +590,7 @@ export default function ReunionDialoguePage() {
                 )}
               >
                 <Compass size={12} />
-                自定义年份
+                {t('reunionDialogue.customYear')}
               </button>
             </div>
 
@@ -632,14 +616,14 @@ export default function ReunionDialoguePage() {
                       setCustomYear(val);
                       setHistoryLoaded(false);
                     }}
-                    placeholder={`输入年份（1940-${CURRENT_YEAR + 50}）`}
+                    placeholder={t('reunionDialogue.yearPlaceholder', { maxYear: CURRENT_YEAR + 50 })}
                     className="h-9 w-40 rounded-lg border border-border bg-bg-card px-3 text-xs text-text placeholder:text-text-dim focus:border-gold-dim focus:outline-none focus:ring-1 focus:ring-gold-dim"
                   />
                   {customYear && (
                     <span className="text-xs text-text-dim">
                       {currentTimeOption.direction === 'past'
-                        ? `${currentTimeOption.yearsOffset} 年前的自己`
-                        : `${currentTimeOption.yearsOffset} 年后的自己`}
+                        ? t('reunionDialogue.yearsAgoSelf', { years: currentTimeOption.yearsOffset })
+                        : t('reunionDialogue.yearsLaterSelf', { years: currentTimeOption.yearsOffset })}
                     </span>
                   )}
                 </motion.div>
@@ -662,11 +646,10 @@ export default function ReunionDialoguePage() {
                   <Lock size={14} className="shrink-0 text-red" />
                   <div>
                     <p className="text-xs font-medium text-text">
-                      今日对话次数已用完
+                      {t('reunionDialogue.quotaExhausted')}
                     </p>
                     <p className="text-[10px] text-text-dim">
-                      {getTierConfig(membership.tier).name} · 每日{' '}
-                      {dialogueCheck.limit} 次 · 明日 0:00 重置
+                      {t('reunionDialogue.quotaDetail', { tier: getTierConfig(membership.tier).name, limit: dialogueCheck.limit })}
                     </p>
                   </div>
                 </div>
@@ -675,7 +658,7 @@ export default function ReunionDialoguePage() {
                   className="interactive inline-flex shrink-0 items-center gap-1 rounded-full bg-gold px-3 py-1.5 text-xs font-semibold text-bg transition-colors hover:bg-gold-dim"
                 >
                   <Zap size={12} />
-                  升级会员
+                  {t('reunionDialogue.upgrade')}
                 </Link>
               </div>
             </motion.div>
@@ -723,8 +706,8 @@ export default function ReunionDialoguePage() {
                           }}
                         >
                           {currentTimeOption.direction === 'past'
-                            ? '过去的自己正在回忆'
-                            : '未来的自己正在凝望'}
+                            ? t('reunionDialogue.pastListening')
+                            : t('reunionDialogue.futureListening')}
                         </motion.span>
                         <motion.span
                           animate={{ opacity: [0.4, 1, 0.4] }}
@@ -798,7 +781,7 @@ export default function ReunionDialoguePage() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder={`和${currentTimeOption.label}的自己说点什么...`}
+                placeholder={t('reunionDialogue.inputPlaceholder', { label: currentTimeOption.label })}
                 rows={1}
                 disabled={isLoading || currentTimeOption.yearsOffset <= 0}
                 className={cn(
@@ -823,7 +806,7 @@ export default function ReunionDialoguePage() {
                   currentTimeOption.yearsOffset <= 0
                 }
                 className="shrink-0"
-                aria-label="发送"
+                aria-label={t('reunionDialogue.send')}
               >
                 {isLoading ? (
                   <Loader2 size={16} className="animate-spin" />
@@ -833,7 +816,7 @@ export default function ReunionDialoguePage() {
               </Button>
             </div>
             <p className="mt-2 text-[10px] text-text-dim">
-              Enter 发送 · Shift + Enter 换行 · 对话仅保存在本地浏览器
+              {t('reunionDialogue.inputHint')}
             </p>
           </div>
         </motion.div>
