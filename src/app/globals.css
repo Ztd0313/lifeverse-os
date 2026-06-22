@@ -98,8 +98,16 @@ body {
   font-size: 15px;
   line-height: 1.75;
   -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
   overflow-x: hidden;
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* 超窄屏减小基准字号 */
+@media (max-width: 380px) {
+  :root {
+    font-size: 14px;
+  }
 }
 
 /* ===== 视觉层级系统 ===== */
