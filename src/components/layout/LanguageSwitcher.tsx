@@ -73,13 +73,13 @@ export function LanguageSwitcher({ className }: { className?: string }) {
         aria-expanded={open}
         aria-haspopup="listbox"
         className={cn(
-          'flex h-9 items-center gap-1.5 rounded-full px-3 text-sm transition-all',
+          'flex h-10 items-center gap-1.5 rounded-full px-3 text-sm transition-all lg:h-9',
           'text-text-soft hover:bg-bg-card hover:text-gold',
           open && 'bg-bg-card text-gold'
         )}
       >
         <Globe size={16} />
-        <span className="hidden text-xs font-medium sm:inline">
+        <span className="text-xs font-medium">
           {currentLocale.flag}
         </span>
         <ChevronDown
@@ -118,7 +118,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
                     role="option"
                     aria-selected={isActive}
                     className={cn(
-                      'flex w-full items-center gap-2.5 px-4 py-2.5 text-sm transition-colors',
+                      'flex w-full items-center gap-2.5 px-4 py-3 text-sm transition-colors',
                       isActive
                         ? 'bg-gold-soft/30 text-gold'
                         : 'text-text-soft hover:bg-bg-soft hover:text-text'
