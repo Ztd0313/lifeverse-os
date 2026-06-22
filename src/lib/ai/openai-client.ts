@@ -10,7 +10,6 @@ import OpenAI from 'openai';
  * API key 读取顺序：
  * 1. 环境变量 DEEPSEEK_API_KEY
  * 2. 环境变量 OPENAI_API_KEY（向后兼容）
- * 3. 内置 fallback key（仅用于本地开发/演示，生产环境必须通过环境变量注入）
  *
  * 未配置时返回 null，调用方需自行处理降级逻辑（如返回 Mock 数据）。
  */
@@ -21,20 +20,12 @@ export const DEEPSEEK_BASE_URL = 'https://api.deepseek.com/v1';
 /** 默认模型名 */
 export const DEFAULT_MODEL = 'deepseek-chat';
 
-/**
- * 内置 fallback API Key
- *
- * 仅当环境变量未配置时使用，方便本地开发与演示。
- * 生产环境务必通过 DEEPSEEK_API_KEY 环境变量覆盖。
- */
-const FALLBACK_API_KEY = 'sk-9e12ccb93989439b8d8bb4ed23e91539';
-
 let client: OpenAI | null = null;
 
 /**
  * 获取当前生效的 API Key
  *
- * 优先级：DEEPSEEK_API_KEY > OPENAI_API_KEY > 内置 fallback
+ * 优先级：DEEPSEEK_API_KEY > OPENAI_API_KEY
  */
 function resolveApiKey(): string | null {
   if (process.env.DEEPSEEK_API_KEY) {
@@ -43,7 +34,7 @@ function resolveApiKey(): string | null {
   if (process.env.OPENAI_API_KEY) {
     return process.env.OPENAI_API_KEY;
   }
-  return FALLBACK_API_KEY;
+  return null;
 }
 
 /**
@@ -76,8 +67,7 @@ export function getOpenAIClient(): OpenAI | null {
  *
  * 保留原函数名以兼容既有调用方（/api/council、/api/agent 等）。
  * 实际判断逻辑：环境变量 DEEPSEEK_API_KEY 或 OPENAI_API_KEY 任一存在即视为已配置；
- * 若两者均不存在，则视为未配置（即使存在 fallback key 也返回 false，
- * 以便生产环境能通过 mock fallback 暴露配置缺失问题）。
+ * 若两者均不存在，则视为未配置，调用方需自行处理降级逻辑（如返回 Mock 数据）。
  */
 export function isOpenAIConfigured(): boolean {
   return Boolean(process.env.DEEPSEEK_API_KEY || process.env.OPENAI_API_KEY);
