@@ -30,7 +30,7 @@ export interface AgentCardProps {
  */
 const SIZE_CONFIG = {
   sm: {
-    card: 'w-40',
+    card: 'w-full max-w-[160px]',
     padding: 'p-3',
     avatar: 'text-4xl',
     name: 'text-sm',
@@ -39,7 +39,7 @@ const SIZE_CONFIG = {
     gap: 'gap-1.5',
   },
   md: {
-    card: 'w-52',
+    card: 'w-full max-w-[208px]',
     padding: 'p-4',
     avatar: 'text-5xl',
     name: 'text-base',
@@ -48,7 +48,7 @@ const SIZE_CONFIG = {
     gap: 'gap-2',
   },
   lg: {
-    card: 'w-64',
+    card: 'w-full max-w-[256px]',
     padding: 'p-5',
     avatar: 'text-6xl',
     name: 'text-lg',
