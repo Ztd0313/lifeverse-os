@@ -464,7 +464,8 @@ export default function ProfilePage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="card-hover interactive rounded-lg border border-border bg-bg-card p-4 text-center"
+                onClick={() => router.push('/agents')}
+                className="card-hover interactive cursor-pointer rounded-lg border border-border bg-bg-card p-4 text-center"
               >
                 <Bot className="mx-auto h-5 w-5 text-gold" />
                 <div className="mt-2 text-2xl font-bold text-text">
@@ -476,7 +477,8 @@ export default function ProfilePage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15 }}
-                className="card-hover interactive rounded-lg border border-border bg-bg-card p-4 text-center"
+                onClick={() => router.push('/agents')}
+                className="card-hover interactive cursor-pointer rounded-lg border border-border bg-bg-card p-4 text-center"
               >
                 <ShoppingBag className="mx-auto h-5 w-5 text-gold" />
                 <div className="mt-2 text-2xl font-bold text-text">
