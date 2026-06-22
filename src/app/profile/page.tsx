@@ -4,7 +4,6 @@ import * as React from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ArrowLeft,
   User as UserIcon,
   Calendar,
   FileText,
@@ -391,14 +390,7 @@ export default function ProfilePage() {
           className="mx-auto max-w-2xl"
         >
           {/* ===== 顶部导航 ===== */}
-          <div className="mb-6 flex items-center justify-between">
-            <button
-              onClick={() => router.push('/')}
-              className="inline-flex items-center gap-1.5 text-sm text-text-soft transition-colors hover:text-gold"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              {t('profile.backHome')}
-            </button>
+          <div className="mb-6 flex items-center justify-end">
             <span className="text-sm font-medium text-text">{t('profile.title')}</span>
           </div>
 
