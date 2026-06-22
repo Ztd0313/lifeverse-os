@@ -291,7 +291,7 @@ export function RegretAnalysis({
       {/* 回望文字（打字机效果） */}
       <motion.div
         variants={itemVariants}
-        className="relative mb-6 overflow-hidden rounded-xl border border-gold-dim/40 bg-gold-soft/10 p-5"
+        className="relative mb-6 overflow-hidden rounded-xl border border-gold-dim/40 bg-gold-soft/10 p-4 sm:p-5"
       >
         <div className="absolute inset-0 bg-gradient-to-br from-gold-soft/10 via-transparent to-transparent" />
         <div className="relative">
