@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import type { Persona, AgentStatus } from '@/types';
 import { cn } from '@/lib/utils';
 import { RadarChart } from '@/components/charts/RadarChart';
+import { useTranslation } from '@/lib/i18n';
 
 /**
  * Agent 卡片组件 Props
@@ -100,8 +101,9 @@ function getStatusStyles(status: AgentStatus): {
  * 思考中三点动画
  */
 function ThinkingDots() {
+  const { t } = useTranslation();
   return (
-    <div className="flex items-center gap-1" aria-label="思考中">
+    <div className="flex items-center gap-1" aria-label={t('council.agentCard.thinking').replace('...', '')}>
       {[0, 1, 2].map((i) => (
         <motion.span
           key={i}
@@ -176,6 +178,7 @@ function AgentCardComponent({
   showRadar = false,
   className,
 }: AgentCardProps) {
+  const { t } = useTranslation();
   const config = SIZE_CONFIG[size];
   const statusStyles = getStatusStyles(status);
   const isInteractive = !!onClick;
@@ -248,7 +251,7 @@ function AgentCardComponent({
             }
           : undefined
       }
-      aria-label={`${persona.name}，${persona.philosophy}`}
+      aria-label={t('council.agentCard.ariaLabel', { name: persona.name, philosophy: persona.philosophy })}
     >
       {/* 头像区域 */}
       <div className={cn('flex flex-col items-center', config.gap)}>
@@ -352,20 +355,20 @@ function AgentCardComponent({
         {status === 'thinking' && (
           <div className="flex items-center gap-1.5">
             <ThinkingDots />
-            <span className="text-[10px] text-blue">思考中...</span>
+            <span className="text-[10px] text-blue">{t('council.agentCard.thinking')}</span>
           </div>
         )}
 
         {status === 'speaking' && (
           <div className="flex items-center gap-1.5">
             <SpeakingWaves />
-            <span className="text-[10px] text-gold">发言中</span>
+            <span className="text-[10px] text-gold">{t('council.agentCard.speaking')}</span>
           </div>
         )}
 
         {status === 'conflict' && (
           <div className="flex items-center gap-1">
-            <span className="text-[10px] text-red">⚠ 价值冲突</span>
+            <span className="text-[10px] text-red">{t('council.agentCard.conflict')}</span>
           </div>
         )}
 
