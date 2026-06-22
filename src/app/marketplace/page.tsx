@@ -153,7 +153,7 @@ export default function MarketplacePage() {
 
         {/* ===== 底部统计 ===== */}
         <section className="mx-auto max-w-7xl px-6 pb-16">
-          <div className="flex items-center justify-center gap-8 text-center">
+          <div className="flex items-center justify-center gap-4 sm:gap-8 flex-wrap text-center">
             <div>
               <p className="font-serif text-2xl font-semibold text-gold">
                 {MARKETPLACE_AGENTS.length}
