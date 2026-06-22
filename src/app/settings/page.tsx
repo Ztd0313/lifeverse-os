@@ -72,7 +72,7 @@ interface SettingRowProps {
 
 function SettingRow({ label, description, children }: SettingRowProps) {
   return (
-    <div className="flex items-center justify-between gap-4 py-2">
+    <div className="flex items-center justify-between gap-4 flex-wrap py-2">
       <div>
         <p className="text-sm text-text">{label}</p>
         {description && (
@@ -264,7 +264,7 @@ export default function SettingsPage() {
               <button
                 onClick={() => setTheme('dark')}
                 className={cn(
-                  'flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs transition-all',
+                  'flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs transition-all',
                   theme === 'dark'
                     ? 'border-gold bg-gold-soft/30 text-gold'
                     : 'border-border bg-bg-card text-text-dim hover:border-gold-dim'
@@ -277,7 +277,7 @@ export default function SettingsPage() {
               <button
                 onClick={() => setTheme('light')}
                 className={cn(
-                  'flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs transition-all',
+                  'flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs transition-all',
                   theme === 'light'
                     ? 'border-gold bg-gold-soft/30 text-gold'
                     : 'border-border bg-bg-card text-text-dim hover:border-gold-dim'
@@ -305,7 +305,7 @@ export default function SettingsPage() {
                     savePrefs({ ...prefs, defaultAgentCount: count })
                   }
                   className={cn(
-                    'flex h-8 w-8 items-center justify-center rounded-lg border text-sm font-medium transition-all',
+                    'flex h-10 w-10 items-center justify-center rounded-lg border text-sm font-medium transition-all',
                     prefs.defaultAgentCount === count
                       ? 'border-gold bg-gold-soft/30 text-gold'
                       : 'border-border bg-bg-card text-text-soft hover:border-gold-dim'
@@ -330,7 +330,7 @@ export default function SettingsPage() {
                   key={speed}
                   onClick={() => savePrefs({ ...prefs, speechSpeed: speed })}
                   className={cn(
-                    'rounded-lg border px-3 py-1 text-xs transition-all',
+                    'rounded-lg border px-3 py-2 text-xs transition-all',
                     prefs.speechSpeed === speed
                       ? 'border-gold bg-gold-soft/30 text-gold'
                       : 'border-border bg-bg-card text-text-soft hover:border-gold-dim'
