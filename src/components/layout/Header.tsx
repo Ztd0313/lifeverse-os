@@ -129,7 +129,7 @@ export function Header() {
       <header
         className={cn(
           'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
-          'glass border-b border-border',
+          'glass border-b border-border pt-[env(safe-area-inset-top)]',
           scrolled ? 'shadow-[0_4px_24px_rgba(0,0,0,0.15)]' : ''
         )}
         style={{
@@ -181,15 +181,15 @@ export function Header() {
               {t('nav.membership')}
             </Link>
 
-            {/* 会员标识（仅登录用户显示） */}
+            {/* 会员标识（仅登录用户显示，桌面端） */}
             {isAuthenticated && (
               <>
-                <MembershipBadge tier={membership.tier} size="sm" />
+                <MembershipBadge tier={membership.tier} size="sm" className="hidden lg:inline-flex" />
                 {membership.tier === 'free' && (
                   <Link
                     href="/membership"
                     aria-label={t('nav.upgrade')}
-                    className="interactive inline-flex items-center gap-1 rounded-full border border-gold-dim bg-gold-soft/30 px-2.5 py-1 text-xs text-gold transition-all hover:bg-gold-soft/50"
+                    className="interactive hidden items-center gap-1 rounded-full border border-gold-dim bg-gold-soft/30 px-2.5 py-1 text-xs text-gold transition-all hover:bg-gold-soft/50 lg:inline-flex"
                   >
                     <Crown size={12} />
                     {t('nav.upgrade')}
@@ -203,7 +203,7 @@ export function Header() {
               aria-label={t('nav.settings')}
               aria-current={isActive('/settings') ? 'page' : undefined}
               className={cn(
-                'flex h-9 w-9 items-center justify-center rounded-full transition-all hover:bg-bg-card',
+                'flex h-10 w-10 items-center justify-center rounded-full transition-all hover:bg-bg-card lg:h-9 lg:w-9',
                 isActive('/settings') ? 'text-gold' : 'text-text-soft hover:text-gold'
               )}
             >
@@ -326,7 +326,7 @@ export function Header() {
               aria-label={t('common.openMenu')}
               aria-expanded={mobileOpen}
               aria-controls="mobile-nav-drawer"
-              className="flex h-9 w-9 items-center justify-center rounded-full text-text-soft transition-all hover:bg-bg-card hover:text-gold lg:hidden"
+              className="flex h-10 w-10 items-center justify-center rounded-full text-text-soft transition-all hover:bg-bg-card hover:text-gold lg:hidden"
             >
               <Menu size={20} />
             </button>
@@ -358,7 +358,7 @@ export function Header() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="fixed right-0 top-0 z-[70] flex h-screen w-72 max-w-[85vw] flex-col border-l border-border bg-bg-soft lg:hidden"
+              className="fixed right-0 top-0 z-[70] flex h-[100dvh] w-72 max-w-[85vw] flex-col border-l border-border bg-bg-soft pt-[env(safe-area-inset-top)] lg:hidden"
               role="dialog"
               aria-modal="true"
               aria-label={t('nav.mobileNavMenu')}
@@ -370,7 +370,7 @@ export function Header() {
                   type="button"
                   onClick={() => setMobileOpen(false)}
                   aria-label={t('common.closeMenu')}
-                  className="flex h-9 w-9 items-center justify-center rounded-full text-text-soft transition-colors hover:bg-bg-card hover:text-gold"
+                  className="flex h-10 w-10 items-center justify-center rounded-full text-text-soft transition-colors hover:bg-bg-card hover:text-gold"
                 >
                   <X size={20} />
                 </button>
@@ -379,7 +379,7 @@ export function Header() {
               {/* 导航链接 */}
               <nav
                 className="flex-1 space-y-1 overflow-y-auto px-4 py-6"
-                aria-label={t('language.title')}
+                aria-label={t('nav.mainNav')}
               >
                 {NAV_LINKS.map((link) => {
                   const active = isActive(link.href);
@@ -467,7 +467,20 @@ export function Header() {
                           </p>
                         )}
                       </div>
+                      {/* 会员标识（移动端抽屉） */}
+                      <MembershipBadge tier={membership.tier} size="sm" />
                     </div>
+                    {/* 升级链接（仅 free 用户，移动端抽屉） */}
+                    {membership.tier === 'free' && (
+                      <Link
+                        href="/membership"
+                        aria-label={t('nav.upgrade')}
+                        className="interactive flex w-full items-center justify-center gap-1.5 rounded-lg border border-gold-dim bg-gold-soft/30 px-4 py-2.5 text-sm text-gold transition-all hover:bg-gold-soft/50"
+                      >
+                        <Crown size={14} />
+                        {t('nav.upgrade')}
+                      </Link>
+                    )}
                     {/* 退出登录 */}
                     <button
                       type="button"
