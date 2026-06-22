@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth-store';
 import { useMembershipStore } from '@/stores/membership-store';
+import { useTranslation } from '@/lib/i18n';
 import { useAgentStore } from '@/stores/agent-store';
 import { useMarketplaceStore } from '@/stores/marketplace-store';
 import { MembershipBadge } from '@/components/membership/MembershipBadge';
@@ -54,16 +55,6 @@ function getDayOptions(year: number, month: number): number[] {
   const days = new Date(year, month, 0).getDate();
   return Array.from({ length: days }, (_, i) => i + 1);
 }
-
-/** 性别选项 */
-const GENDER_OPTIONS: Array<{
-  value: NonNullable<User['gender']>;
-  label: string;
-}> = [
-  { value: 'male', label: '男' },
-  { value: 'female', label: '女' },
-  { value: 'other', label: '其他' },
-];
 
 // ===== 工具函数 =====
 
@@ -140,6 +131,7 @@ function Section({ title, icon: Icon, children }: SectionProps) {
 export default function ProfilePage() {
   const router = useRouter();
   const pathname = usePathname();
+  const { t } = useTranslation();
   const {
     user,
     isAuthenticated,
@@ -277,13 +269,13 @@ export default function ProfilePage() {
 
     // 校验文件类型
     if (!file.type.startsWith('image/')) {
-      showToast('error', '请选择图片文件');
+      showToast('error', t('profile.selectImage'));
       return;
     }
 
     // 校验文件大小（5MB）
     if (file.size > 5 * 1024 * 1024) {
-      showToast('error', '图片大小不能超过 5MB');
+      showToast('error', t('profile.imageTooLarge'));
       return;
     }
 
@@ -299,15 +291,15 @@ export default function ProfilePage() {
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        throw new Error(data.error || '头像上传失败');
+        throw new Error(data.error || t('profile.avatarUploadFailed'));
       }
 
       setAvatar(data.url);
-      showToast('success', '头像上传成功，记得保存');
+      showToast('success', t('profile.avatarUploadSuccess'));
     } catch (error) {
       showToast(
         'error',
-        error instanceof Error ? error.message : '头像上传失败'
+        error instanceof Error ? error.message : t('profile.avatarUploadFailed')
       );
     } finally {
       setAvatarUploading(false);
@@ -329,14 +321,19 @@ export default function ProfilePage() {
       trimmedNickname.length > NICKNAME_MAX_LENGTH
     ) {
       setFormError(
-        `昵称长度需在 ${NICKNAME_MIN_LENGTH}-${NICKNAME_MAX_LENGTH} 个字符之间`
+        t('profile.nicknameLengthError', {
+          min: NICKNAME_MIN_LENGTH,
+          max: NICKNAME_MAX_LENGTH,
+        })
       );
       return;
     }
 
     // 简介校验
     if (bio.length > BIO_MAX_LENGTH) {
-      setFormError(`个人简介不能超过 ${BIO_MAX_LENGTH} 个字符`);
+      setFormError(
+        t('profile.bioLengthError', { max: BIO_MAX_LENGTH })
+      );
       return;
     }
 
@@ -354,11 +351,11 @@ export default function ProfilePage() {
 
     try {
       await updateProfile(updateData);
-      showToast('success', '个人资料保存成功');
+      showToast('success', t('profile.profileSaved'));
     } catch (error) {
       showToast(
         'error',
-        error instanceof Error ? error.message : '保存失败，请稍后重试'
+        error instanceof Error ? error.message : t('profile.saveFailed')
       );
     }
   };
@@ -372,7 +369,7 @@ export default function ProfilePage() {
         <main className="relative z-10 flex min-h-screen items-center justify-center">
           <div className="flex flex-col items-center gap-4 text-text-soft">
             <Loader2 size={32} className="animate-spin text-gold" />
-            <p className="text-sm">正在验证登录状态...</p>
+            <p className="text-sm">{t('profile.verifying')}</p>
           </div>
         </main>
       </>
@@ -398,9 +395,9 @@ export default function ProfilePage() {
               className="inline-flex items-center gap-1.5 text-sm text-text-soft transition-colors hover:text-gold"
             >
               <ArrowLeft className="h-4 w-4" />
-              返回首页
+              {t('profile.backHome')}
             </button>
-            <span className="text-sm font-medium text-text">个人中心</span>
+            <span className="text-sm font-medium text-text">{t('profile.title')}</span>
           </div>
 
           {/* ===== 用户中心 Dashboard ===== */}
@@ -411,10 +408,10 @@ export default function ProfilePage() {
               className="mb-6"
             >
               <h1 className="h-display text-3xl text-gradient-gold sm:text-4xl">
-                个人中心
+                {t('profile.title')}
               </h1>
               <p className="mt-2 text-sm text-text-soft">
-                管理你的资料、会员和数据
+                {t('profile.subtitle')}
               </p>
             </motion.div>
 
@@ -430,7 +427,7 @@ export default function ProfilePage() {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={avatar}
-                    alt="头像"
+                    alt={t('profile.avatar')}
                     className="h-full w-full object-cover"
                   />
                 ) : (
@@ -442,12 +439,12 @@ export default function ProfilePage() {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <h2 className="truncate text-lg font-semibold text-text">
-                    {nickname || user?.nickname || '探索者'}
+                    {nickname || user?.nickname || t('profile.defaultNickname')}
                   </h2>
                   <MembershipBadge tier={membership.tier} size="sm" />
                 </div>
                 <p className="mt-1 text-xs text-text-dim">
-                  {user?.phone || '欢迎回到 LifeVerse'}
+                  {user?.phone || t('profile.welcomeBack')}
                 </p>
               </div>
               <Link
@@ -455,7 +452,7 @@ export default function ProfilePage() {
                 className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-gold-dim/40 bg-gold-soft/20 px-3 py-2 text-xs font-medium text-gold transition-all hover:bg-gold-soft/40 hover:shadow-[0_0_16px_var(--shadow-gold-strong)]"
               >
                 <Crown className="h-3.5 w-3.5" />
-                查看会员方案
+                {t('profile.viewMembership')}
               </Link>
             </motion.div>
 
@@ -471,7 +468,7 @@ export default function ProfilePage() {
                 <div className="mt-2 text-2xl font-bold text-text">
                   {customAgents.length}
                 </div>
-                <div className="mt-0.5 text-xs text-text-dim">自定义 Agent</div>
+                <div className="mt-0.5 text-xs text-text-dim">{t('profile.customAgent')}</div>
               </motion.div>
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -483,7 +480,7 @@ export default function ProfilePage() {
                 <div className="mt-2 text-2xl font-bold text-text">
                   {ownedAgentCount}
                 </div>
-                <div className="mt-0.5 text-xs text-text-dim">拥有 Agent</div>
+                <div className="mt-0.5 text-xs text-text-dim">{t('profile.ownedAgent')}</div>
               </motion.div>
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -495,7 +492,7 @@ export default function ProfilePage() {
                 <div className="mt-2 text-2xl font-bold text-text">
                   {daysJoined}
                 </div>
-                <div className="mt-0.5 text-xs text-text-dim">加入天数</div>
+                <div className="mt-0.5 text-xs text-text-dim">{t('profile.daysJoined')}</div>
               </motion.div>
             </div>
 
@@ -526,15 +523,15 @@ export default function ProfilePage() {
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gold-soft">
                   <Crown className="h-4 w-4 text-gold" />
                 </div>
-                <h2 className="text-sm font-semibold text-text">会员信息</h2>
+                <h2 className="text-sm font-semibold text-text">{t('profile.membershipInfo')}</h2>
               </div>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-text-soft">当前等级</span>
+                  <span className="text-sm text-text-soft">{t('profile.currentTier')}</span>
                   <MembershipBadge tier={membership.tier} size="md" />
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-text-soft">到期时间</span>
+                  <span className="text-sm text-text-soft">{t('profile.expiresAt')}</span>
                   <span className="text-sm font-medium text-text">
                     {membership.expiresAt
                       ? new Date(membership.expiresAt).toLocaleDateString(
@@ -549,9 +546,12 @@ export default function ProfilePage() {
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-text-soft">Agent 席位</span>
+                  <span className="text-sm text-text-soft">{t('profile.agentSeats')}</span>
                   <span className="text-sm font-medium text-text">
-                    {customAgents.length} / {totalSeats} 个席位已使用
+                    {t('profile.seatsUsed', {
+                      used: customAgents.length,
+                      total: totalSeats,
+                    })}
                   </span>
                 </div>
                 <div className="pt-2">
@@ -560,7 +560,7 @@ export default function ProfilePage() {
                     className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-gold-dim bg-gold-soft/30 px-4 py-2.5 text-sm font-medium text-gold transition-all hover:bg-gold-soft/50 hover:shadow-[0_0_16px_var(--shadow-gold-strong)]"
                   >
                     <Crown className="h-4 w-4" />
-                    管理会员
+                    {t('profile.manageMembership')}
                   </Link>
                 </div>
               </div>
@@ -577,7 +577,7 @@ export default function ProfilePage() {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gold-soft">
                 <UserIcon className="h-4 w-4 text-gold" />
               </div>
-              <h2 className="text-base font-semibold text-text">编辑资料</h2>
+              <h2 className="text-base font-semibold text-text">{t('profile.editProfile')}</h2>
             </motion.div>
 
             {/* ===== 头像区域 ===== */}
@@ -592,7 +592,7 @@ export default function ProfilePage() {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={avatar}
-                    alt="头像"
+                    alt={t('profile.avatar')}
                     className="h-full w-full object-cover"
                   />
                 ) : (
@@ -605,7 +605,7 @@ export default function ProfilePage() {
                 type="button"
                 onClick={handleAvatarClick}
                 disabled={avatarUploading}
-                aria-label="更换头像"
+                aria-label={t('profile.changeAvatar')}
                 className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full border border-gold-dim bg-bg-soft text-gold transition-all hover:bg-gold-soft hover:shadow-[0_0_16px_var(--shadow-gold-strong)] disabled:opacity-50"
               >
                 {avatarUploading ? (
@@ -622,18 +622,18 @@ export default function ProfilePage() {
                 className="hidden"
               />
             </div>
-            <p className="text-xs text-text-dim">点击相机图标更换头像</p>
+            <p className="text-xs text-text-dim">{t('profile.avatarTip')}</p>
           </motion.div>
 
           {/* ===== 基本信息 ===== */}
-          <Section title="基本信息" icon={UserIcon}>
+          <Section title={t('profile.basicInfo')} icon={UserIcon}>
             {/* 昵称 */}
             <div className="space-y-2">
               <label
                 htmlFor="profile-nickname"
                 className="block text-xs font-medium text-text-soft"
               >
-                昵称
+                {t('profile.nickname')}
                 <span className="ml-2 text-text-dim">
                   ({nickname.length}/{NICKNAME_MAX_LENGTH})
                 </span>
@@ -646,7 +646,7 @@ export default function ProfilePage() {
                   setNickname(e.target.value.slice(0, NICKNAME_MAX_LENGTH));
                   if (formError) setFormError('');
                 }}
-                placeholder="请输入昵称（2-20 字符）"
+                placeholder={t('profile.nicknamePlaceholder')}
                 maxLength={NICKNAME_MAX_LENGTH}
                 className="h-11 w-full rounded-[10px] border border-border bg-bg-soft px-4 text-sm text-text placeholder:text-text-dim transition-colors focus:border-gold-dim focus:outline-none focus:ring-1 focus:ring-gold-dim"
               />
@@ -655,10 +655,14 @@ export default function ProfilePage() {
             {/* 性别 */}
             <div className="space-y-2">
               <label className="block text-xs font-medium text-text-soft">
-                性别
+                {t('profile.gender')}
               </label>
               <div className="flex gap-2">
-                {GENDER_OPTIONS.map((option) => (
+                {([
+                  { value: 'male', labelKey: 'profile.male' },
+                  { value: 'female', labelKey: 'profile.female' },
+                  { value: 'other', labelKey: 'profile.other' },
+                ] as const).map((option) => (
                   <button
                     key={option.value}
                     type="button"
@@ -673,7 +677,7 @@ export default function ProfilePage() {
                     {gender === option.value && (
                       <Check className="h-3.5 w-3.5" />
                     )}
-                    {option.label}
+                    {t(option.labelKey)}
                   </button>
                 ))}
               </div>
@@ -682,11 +686,11 @@ export default function ProfilePage() {
 
           {/* ===== 出生年月日 ===== */}
           <div className="mt-4">
-            <Section title="出生年月日" icon={Calendar}>
+            <Section title={t('profile.birthday')} icon={Calendar}>
               <div className="grid grid-cols-3 gap-3">
                 {/* 年 */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs text-text-dim">年</label>
+                  <label className="block text-xs text-text-dim">{t('profile.year')}</label>
                   <select
                     value={birthYear}
                     onChange={(e) =>
@@ -696,10 +700,10 @@ export default function ProfilePage() {
                     }
                     className="h-11 w-full rounded-[10px] border border-border bg-bg-soft px-3 text-sm text-text transition-colors focus:border-gold-dim focus:outline-none focus:ring-1 focus:ring-gold-dim"
                   >
-                    <option value="">选择年份</option>
+                    <option value="">{t('profile.selectYear')}</option>
                     {YEAR_OPTIONS.map((y) => (
                       <option key={y} value={y}>
-                        {y} 年
+                        {y} {t('profile.year')}
                       </option>
                     ))}
                   </select>
@@ -707,7 +711,7 @@ export default function ProfilePage() {
 
                 {/* 月 */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs text-text-dim">月</label>
+                  <label className="block text-xs text-text-dim">{t('profile.month')}</label>
                   <select
                     value={birthMonth}
                     onChange={(e) =>
@@ -717,10 +721,10 @@ export default function ProfilePage() {
                     }
                     className="h-11 w-full rounded-[10px] border border-border bg-bg-soft px-3 text-sm text-text transition-colors focus:border-gold-dim focus:outline-none focus:ring-1 focus:ring-gold-dim"
                   >
-                    <option value="">选择月份</option>
+                    <option value="">{t('profile.selectMonth')}</option>
                     {MONTH_OPTIONS.map((m) => (
                       <option key={m} value={m}>
-                        {m} 月
+                        {m} {t('profile.month')}
                       </option>
                     ))}
                   </select>
@@ -728,7 +732,7 @@ export default function ProfilePage() {
 
                 {/* 日 */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs text-text-dim">日</label>
+                  <label className="block text-xs text-text-dim">{t('profile.day')}</label>
                   <select
                     value={birthDay}
                     onChange={(e) =>
@@ -739,13 +743,13 @@ export default function ProfilePage() {
                     disabled={!birthYear || !birthMonth}
                     className="h-11 w-full rounded-[10px] border border-border bg-bg-soft px-3 text-sm text-text transition-colors focus:border-gold-dim focus:outline-none focus:ring-1 focus:ring-gold-dim disabled:opacity-50"
                   >
-                    <option value="">选择日期</option>
+                    <option value="">{t('profile.selectDay')}</option>
                     {getDayOptions(
                       birthYear || 2000,
                       birthMonth || 1
                     ).map((d) => (
                       <option key={d} value={d}>
-                        {d} 日
+                        {d} {t('profile.day')}
                       </option>
                     ))}
                   </select>
@@ -754,9 +758,11 @@ export default function ProfilePage() {
 
               {/* 年龄显示（只读） */}
               <div className="flex items-center justify-between rounded-[10px] border border-border bg-bg-soft/60 px-4 py-2.5">
-                <span className="text-sm text-text-soft">年龄</span>
+                <span className="text-sm text-text-soft">{t('profile.age')}</span>
                 <span className="text-sm font-medium text-gold">
-                  {age !== null ? `${age} 岁` : '请先选择出生年月日'}
+                  {age !== null
+                    ? t('profile.ageValue', { age })
+                    : t('profile.agePlaceholder')}
                 </span>
               </div>
 
@@ -764,7 +770,7 @@ export default function ProfilePage() {
               <div className="flex items-start gap-2 rounded-[10px] border border-gold-dim/30 bg-gold-soft/20 px-3 py-2.5">
                 <Info size={14} className="mt-0.5 shrink-0 text-gold" />
                 <p className="text-xs leading-relaxed text-gold/90">
-                  建议使用真实的出生年月日，系统会根据您的年龄提供更精准的内心对话体验
+                  {t('profile.birthdayTip')}
                 </p>
               </div>
             </Section>
@@ -772,13 +778,13 @@ export default function ProfilePage() {
 
           {/* ===== 个人简介 ===== */}
           <div className="mt-4">
-            <Section title="个人简介" icon={FileText}>
+            <Section title={t('profile.bio')} icon={FileText}>
               <div className="space-y-2">
                 <label
                   htmlFor="profile-bio"
                   className="block text-xs font-medium text-text-soft"
                 >
-                  简介
+                  {t('profile.bioLabel')}
                   <span className="ml-2 text-text-dim">
                     ({bio.length}/{BIO_MAX_LENGTH})
                   </span>
@@ -790,7 +796,7 @@ export default function ProfilePage() {
                     setBio(e.target.value.slice(0, BIO_MAX_LENGTH));
                     if (formError) setFormError('');
                   }}
-                  placeholder="介绍一下自己，最多 200 字..."
+                  placeholder={t('profile.bioPlaceholder')}
                   rows={4}
                   maxLength={BIO_MAX_LENGTH}
                   className="w-full resize-none rounded-[10px] border border-border bg-bg-soft px-4 py-3 text-sm text-text placeholder:text-text-dim transition-colors focus:border-gold-dim focus:outline-none focus:ring-1 focus:ring-gold-dim"
@@ -821,7 +827,7 @@ export default function ProfilePage() {
               size="md"
               onClick={() => router.push('/')}
             >
-              取消
+              {t('profile.cancel')}
             </Button>
             <Button
               variant="gold"
@@ -832,12 +838,12 @@ export default function ProfilePage() {
               {isLoading ? (
                 <>
                   <Loader2 size={16} className="animate-spin" />
-                  保存中...
+                  {t('profile.saving')}
                 </>
               ) : (
                 <>
                   <Check size={16} />
-                  保存
+                  {t('profile.save')}
                 </>
               )}
             </Button>
