@@ -518,7 +518,7 @@ function AuthPageContent() {
 
           {/* 登录卡片 */}
           <motion.div variants={itemVariant}>
-            <Card hover={false} className="space-y-6 p-8">
+            <Card hover={false} className="space-y-6 p-6 sm:p-8">
               {/* 标题区 */}
               <div className="space-y-3 text-center">
                 <span className="inline-flex items-center rounded-full border border-gold-dim bg-gold-soft px-4 py-1 text-xs tracking-widest text-gold">
