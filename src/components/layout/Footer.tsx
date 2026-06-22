@@ -60,7 +60,7 @@ export function Footer() {
 
   return (
     <footer className="relative z-10 border-t border-border bg-bg-soft/60">
-      <div className="mx-auto max-w-7xl px-6 py-12">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           {/* 品牌区 */}
           <div className="flex flex-col items-center text-center md:items-start md:text-left">
@@ -89,7 +89,7 @@ export function Footer() {
                     <li key={link.href}>
                       <Link
                         href={link.href}
-                        className="text-xs text-text-soft transition-colors hover:text-gold"
+                        className="inline-block py-2 text-xs text-text-soft transition-colors hover:text-gold sm:text-sm"
                       >
                         {t(link.labelKey)}
                       </Link>
