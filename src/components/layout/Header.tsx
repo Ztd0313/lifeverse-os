@@ -3,12 +3,13 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Settings, Menu, X, Crown, User as UserIcon, LogOut, ChevronDown } from 'lucide-react';
+import { Settings, Menu, X, Crown, User as UserIcon, LogOut, ChevronDown, Sun, Moon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/brand/Logo';
 import { useMembershipStore } from '@/stores/membership-store';
 import { useAuthStore } from '@/stores/auth-store';
+import { useThemeStore } from '@/stores/theme-store';
 import { MembershipBadge } from '@/components/membership/MembershipBadge';
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher';
 import { useTranslation } from '@/lib/i18n';
@@ -90,6 +91,7 @@ export function Header() {
   const { membership } = useMembershipStore();
   const { isAuthenticated, user, logout } = useAuthStore();
   const { t } = useTranslation();
+  const { theme, toggleTheme } = useThemeStore();
   const userMenuRef = React.useRef<HTMLDivElement>(null);
   const dropdownTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -334,6 +336,16 @@ export function Header() {
             >
               <Settings size={18} />
             </Link>
+
+            {/* 主题切换按钮：深色主题显示太阳（点击切到浅色），浅色主题显示月亮（点击切到深色） */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-label={t('nav.themeToggle')}
+              className="flex h-10 w-10 items-center justify-center rounded-full text-text-soft transition-all hover:bg-bg-card hover:text-gold lg:h-9 lg:w-9"
+            >
+              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
 
             {/* 语言切换器 */}
             <LanguageSwitcher />
