@@ -36,6 +36,7 @@ import { getTotalAgentSeats, getTierConfig } from '@/types/membership';
 import { MembershipBadge } from '@/components/membership/MembershipBadge';
 import { DIALOGUE_STYLE_LABELS } from '@/lib/ai/agent-templates';
 import { cn, formatDate } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 
 /**
  * 自定义 Agent 卡片
@@ -47,9 +48,10 @@ interface AgentCardProps {
   index: number;
   onEdit: (agent: CustomAgent) => void;
   onDelete: (agent: CustomAgent) => void;
+  t: (key: string, vars?: Record<string, string | number>) => string;
 }
 
-function AgentCardItem({ agent, index, onEdit, onDelete }: AgentCardProps) {
+function AgentCardItem({ agent, index, onEdit, onDelete, t }: AgentCardProps) {
   return (
     <motion.div variants={cardItem}>
       <Card className="group card-hover flex h-full flex-col gap-4">
@@ -63,7 +65,7 @@ function AgentCardItem({ agent, index, onEdit, onDelete }: AgentCardProps) {
               {agent.name}
             </h3>
             <p className="text-xs font-medium text-gold">
-              自定义成员
+              {t('agents.customMember')}
             </p>
             <div className="mt-1.5 flex flex-wrap gap-1.5">
               <Badge variant="gold">{agent.expertise}</Badge>
@@ -76,7 +78,7 @@ function AgentCardItem({ agent, index, onEdit, onDelete }: AgentCardProps) {
 
         {/* 性格描述 */}
         <div className="flex-1">
-          <span className="text-xs text-text-dim">性格</span>
+          <span className="text-xs text-text-dim">{t('agents.personality')}</span>
           <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-text-soft">
             {agent.personality}
           </p>
@@ -84,7 +86,7 @@ function AgentCardItem({ agent, index, onEdit, onDelete }: AgentCardProps) {
 
         {/* 核心理念 */}
         <div>
-          <span className="text-xs text-text-dim">核心理念</span>
+          <span className="text-xs text-text-dim">{t('agents.coreBelief')}</span>
           <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-text-soft">
             {agent.coreBelief}
           </p>
@@ -92,7 +94,7 @@ function AgentCardItem({ agent, index, onEdit, onDelete }: AgentCardProps) {
 
         {/* 创建时间 */}
         <div className="text-[10px] text-text-dim">
-          创建于 {formatDate(new Date(agent.createdAt).getTime())}
+          {t('agents.createdAt', { date: formatDate(new Date(agent.createdAt).getTime()) })}
         </div>
 
         {/* 操作按钮 */}
@@ -104,7 +106,7 @@ function AgentCardItem({ agent, index, onEdit, onDelete }: AgentCardProps) {
             onClick={() => onEdit(agent)}
           >
             <Edit3 className="h-3.5 w-3.5" />
-            编辑
+            {t('agents.edit')}
           </Button>
           <Button
             variant="ghost"
@@ -113,7 +115,7 @@ function AgentCardItem({ agent, index, onEdit, onDelete }: AgentCardProps) {
             onClick={() => onDelete(agent)}
           >
             <Trash2 className="h-3.5 w-3.5" />
-            删除
+            {t('agents.delete')}
           </Button>
         </div>
       </Card>
@@ -126,7 +128,7 @@ function AgentCardItem({ agent, index, onEdit, onDelete }: AgentCardProps) {
  *
  * 引导用户创建第一个自定义 Agent。
  */
-function EmptyState({ onCreate }: { onCreate: () => void }) {
+function EmptyState({ onCreate, t }: { onCreate: () => void; t: (key: string, vars?: Record<string, string | number>) => string }) {
   return (
     <motion.div
       variants={fadeInUp}
@@ -143,18 +145,16 @@ function EmptyState({ onCreate }: { onCreate: () => void }) {
 
       <div className="text-center">
         <h3 className="h-title text-2xl text-text">
-          还没有自定义 Agent
+          {t('agents.emptyTitle')}
         </h3>
         <p className="mt-2 max-w-md text-sm leading-relaxed text-text-soft">
-          为你的智慧议会打造专属成员。
-          <br />
-          定义TA的性格、专业领域和核心理念，让议会讨论更加个性化。
+          {t('agents.emptyDescription')}
         </p>
       </div>
 
       <Button variant="gold" size="lg" onClick={onCreate}>
         <Plus className="h-4 w-4" />
-        创建第一个 Agent
+        {t('agents.createFirst')}
       </Button>
     </motion.div>
   );
@@ -178,6 +178,7 @@ function EmptyState({ onCreate }: { onCreate: () => void }) {
 export default function AgentsPage() {
   const router = useRouter();
   const pathname = usePathname();
+  const { t } = useTranslation();
   const { isAuthenticated, isInitialized, checkAuth } = useAuthStore();
   const {
     customAgents,
@@ -255,20 +256,20 @@ export default function AgentsPage() {
   const handleSave = (data: CustomAgentInput) => {
     if (editingAgent) {
       updateAgent(editingAgent.id, data);
-      showToast('success', `Agent「${data.name}」已更新`);
+      showToast('success', t('agents.toastUpdated', { name: data.name }));
     } else {
       if (usedSeats >= totalSeats) {
-        showToast('error', '席位已满，请升级会员或购买席位', {
+        showToast('error', t('agents.seatsFullToast'), {
           href: '/membership',
-          label: '前往会员中心',
+          label: t('agents.goToMembership'),
         });
         return;
       }
       const created = createAgent(data);
       if (created) {
-        showToast('success', `Agent「${data.name}」已创建`);
+        showToast('success', t('agents.toastCreated', { name: data.name }));
       } else {
-        showToast('error', error || '创建失败，可能已达上限');
+        showToast('error', error || t('agents.createFailed'));
       }
     }
   };
@@ -279,7 +280,7 @@ export default function AgentsPage() {
     const name = deleteTarget.name;
     deleteAgent(deleteTarget.id);
     setDeleteTarget(null);
-    showToast('success', `Agent「${name}」已删除`);
+    showToast('success', t('agents.toastDeleted', { name }));
   };
 
   // 登录态校验中，显示加载状态
@@ -291,7 +292,7 @@ export default function AgentsPage() {
         <main className="relative z-10 flex min-h-screen items-center justify-center">
           <div className="flex flex-col items-center gap-4 text-text-soft">
             <Loader2 size={32} className="animate-spin text-gold" />
-            <p className="text-sm">正在验证登录状态...</p>
+            <p className="text-sm">{t('agents.verifying')}</p>
           </div>
         </main>
       </>
@@ -315,7 +316,7 @@ export default function AgentsPage() {
             <Button asChild variant="ghost" size="sm">
               <Link href="/">
                 <ArrowLeft className="h-4 w-4" />
-                返回首页
+                {t('agents.backHome')}
               </Link>
             </Button>
           </motion.div>
@@ -331,11 +332,11 @@ export default function AgentsPage() {
             </Badge>
 
             <h1 className="h-display text-4xl text-gradient-gold sm:text-5xl md:text-6xl">
-              我的 Agent
+              {t('agents.title')}
             </h1>
 
             <p className="max-w-2xl text-base leading-relaxed text-text-soft sm:text-lg">
-              打造属于你的专属议会成员，定义TA们的性格、专业与信念
+              {t('agents.subtitle')}
             </p>
           </motion.div>
 
@@ -346,14 +347,14 @@ export default function AgentsPage() {
                 <MembershipBadge tier={membership.tier} size="md" showIcon />
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-center gap-2 text-sm">
-                    <span className="text-text-soft">Agent 席位:</span>
+                    <span className="text-text-soft">{t('agents.agentSeats')}</span>
                     <span className="font-semibold text-text">
                       {usedSeats} / {totalSeats}
                     </span>
                     {remainingSeats > 0 ? (
-                      <Badge variant="green">还可创建 {remainingSeats} 个</Badge>
+                      <Badge variant="green">{t('agents.canCreate', { count: remainingSeats })}</Badge>
                     ) : (
-                      <Badge variant="red">席位已满</Badge>
+                      <Badge variant="red">{t('agents.seatsFull')}</Badge>
                     )}
                   </div>
                   {/* 进度条 */}
@@ -370,9 +371,9 @@ export default function AgentsPage() {
                     />
                   </div>
                   <span className="text-[10px] text-text-dim">
-                    {tierConfig.name}赠送 {tierConfig.agentSeats} 席
+                    {t('agents.seatsIncluded', { tier: tierConfig.name, seats: tierConfig.agentSeats })}
                     {membership.purchasedSeats > 0 &&
-                      ` · 已购买 ${membership.purchasedSeats} 席`}
+                      ` · ${t('agents.purchasedSeats', { seats: membership.purchasedSeats })}`}
                   </span>
                 </div>
               </div>
@@ -382,14 +383,14 @@ export default function AgentsPage() {
                   <Button asChild variant="gold" size="sm" className="interactive">
                     <Link href="/membership">
                       <Crown className="h-3.5 w-3.5" />
-                      升级会员获得更多席位
+                      {t('agents.upgradeForSeats')}
                     </Link>
                   </Button>
                 ) : (
                   <Button asChild variant="ghost" size="sm" className="interactive">
                     <Link href="/membership">
                       <Plus className="h-3.5 w-3.5" />
-                      购买席位
+                      {t('agents.buySeats')}
                     </Link>
                   </Button>
                 )}
@@ -405,11 +406,7 @@ export default function AgentsPage() {
             <div className="flex items-center gap-3 text-sm text-text-soft">
               <Bot className="h-5 w-5 text-gold" />
               <span>
-                已创建{' '}
-                <span className="font-semibold text-text">
-                  {usedSeats}
-                </span>{' '}
-                / {totalSeats} 个自定义 Agent
+                {t('agents.createdCount', { used: usedSeats, total: totalSeats })}
               </span>
             </div>
 
@@ -421,7 +418,7 @@ export default function AgentsPage() {
                 className="interactive"
               >
                 <Plus className="h-4 w-4" />
-                创建新 Agent
+                {t('agents.createNew')}
               </Button>
             ) : (
               <Button
@@ -429,11 +426,11 @@ export default function AgentsPage() {
                 variant="secondary"
                 size="md"
                 className="interactive cursor-not-allowed opacity-70"
-                title="席位已满，升级会员或购买席位"
+                title={t('agents.seatsFullHint')}
               >
                 <Link href="/membership">
                   <Lock className="h-4 w-4" />
-                  席位已满，升级会员或购买席位
+                  {t('agents.seatsFullHint')}
                 </Link>
               </Button>
             )}
@@ -457,7 +454,7 @@ export default function AgentsPage() {
               <Loader2 className="h-8 w-8 animate-spin text-gold" />
             </div>
           ) : customAgents.length === 0 ? (
-            <EmptyState onCreate={handleOpenCreate} />
+            <EmptyState onCreate={handleOpenCreate} t={t} />
           ) : (
             <motion.div
               variants={staggerContainer}
@@ -470,6 +467,7 @@ export default function AgentsPage() {
                   index={index}
                   onEdit={handleOpenEdit}
                   onDelete={setDeleteTarget}
+                  t={t}
                 />
               ))}
             </motion.div>
@@ -481,7 +479,7 @@ export default function AgentsPage() {
             className="mx-auto mt-8 max-w-2xl text-center"
           >
             <p className="h-title text-xl leading-relaxed text-text-soft sm:text-2xl">
-              &ldquo;每个人心中都有一位智者，等待被唤醒。&rdquo;
+              &ldquo;{t('agents.quote')}&rdquo;
             </p>
           </motion.blockquote>
         </motion.div>
@@ -498,18 +496,14 @@ export default function AgentsPage() {
       {/* ===== 删除确认弹窗 ===== */}
       <ConfirmDialog
         open={!!deleteTarget}
-        title="确认删除 Agent"
+        title={t('agents.confirmDeleteTitle')}
         message={
           <>
-            确定要删除 Agent「
-            <span className="font-semibold text-text">
-              {deleteTarget?.name}
-            </span>
-            」吗？此操作不可恢复。
+            {t('agents.confirmDeleteMessage', { name: deleteTarget?.name || '' })}
           </>
         }
         variant="danger"
-        confirmText="确认删除"
+        confirmText={t('agents.confirmDelete')}
         onConfirm={handleConfirmDelete}
         onCancel={() => setDeleteTarget(null)}
       />
