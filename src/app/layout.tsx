@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { ThemeInitializer, themeInlineScript } from '@/components/layout/ThemeInitializer';
 import { I18nProvider } from '@/lib/i18n';
+import { BottomNav } from '@/components/layout/BottomNav';
 
 export const metadata: Metadata = {
   title: 'LifeVerse — Every life deserves its own universe',
@@ -48,7 +49,10 @@ export default function RootLayout({
       </head>
       <body>
         <ThemeInitializer />
-        <I18nProvider>{children}</I18nProvider>
+        <I18nProvider>
+          {children}
+          <BottomNav />
+        </I18nProvider>
       </body>
     </html>
   );
