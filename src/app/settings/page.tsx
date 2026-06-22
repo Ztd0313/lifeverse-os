@@ -29,6 +29,7 @@ import {
   exportAsCSV,
   exportAsPDF,
 } from '@/lib/export';
+import { useTranslation } from '@/lib/i18n';
 
 // ===== Types =====
 
@@ -87,6 +88,7 @@ function SettingRow({ label, description, children }: SettingRowProps) {
 
 export default function SettingsPage() {
   const router = useRouter();
+  const { t } = useTranslation();
 
   // Theme（来自 theme-store，持久化到 localStorage）
   const theme = useThemeStore((state) => state.theme);
@@ -150,9 +152,9 @@ export default function SettingsPage() {
         k.startsWith('lifeverse-report-')
       );
       keys.forEach((k) => localStorage.removeItem(k));
-      showToast('历史记录已清除');
+      showToast(t('settings.data.historyCleared'));
     } catch {
-      showToast('清除失败，请重试');
+      showToast(t('settings.data.clearFailed'));
     }
     setConfirmClear(false);
   };
@@ -163,9 +165,9 @@ export default function SettingsPage() {
     try {
       const data = collectExportData();
       exportAsJSON(data);
-      showToast('JSON 数据已导出');
+      showToast(t('settings.data.jsonExported'));
     } catch {
-      showToast('导出失败，请重试');
+      showToast(t('settings.data.exportFailed'));
     } finally {
       setExportingFormat(null);
     }
@@ -177,9 +179,9 @@ export default function SettingsPage() {
     try {
       const data = collectExportData();
       exportAsCSV(data);
-      showToast('CSV 数据已导出');
+      showToast(t('settings.data.csvExported'));
     } catch {
-      showToast('导出失败，请重试');
+      showToast(t('settings.data.exportFailed'));
     } finally {
       setExportingFormat(null);
     }
@@ -191,10 +193,10 @@ export default function SettingsPage() {
     try {
       const data = collectExportData();
       await exportAsPDF(data);
-      showToast('PDF 报告已导出');
+      showToast(t('settings.data.pdfExported'));
     } catch (error) {
       console.error('[Export PDF] failed:', error);
-      showToast('PDF 导出失败，请重试');
+      showToast(t('settings.data.pdfExportFailed'));
     } finally {
       setExportingFormat(null);
     }
@@ -224,9 +226,9 @@ export default function SettingsPage() {
               );
             }
           });
-          showToast('数据已导入');
+          showToast(t('settings.data.imported'));
         } catch {
-          showToast('导入失败，文件格式错误');
+          showToast(t('settings.data.importFailed'));
         }
       };
       reader.readAsText(file);
@@ -244,19 +246,19 @@ export default function SettingsPage() {
             className="inline-flex items-center gap-1.5 text-sm text-text-soft transition-colors hover:text-gold"
           >
             <ArrowLeft className="h-4 w-4" />
-            返回首页
+            {t('settings.backHome')}
           </button>
-          <span className="text-sm font-medium text-text">设置</span>
+          <span className="text-sm font-medium text-text">{t('settings.title')}</span>
         </div>
       </header>
 
       {/* Content */}
       <main className="mx-auto max-w-2xl space-y-4 px-4 py-8">
         {/* Theme Settings */}
-        <Section title="主题设置" icon={theme === 'dark' ? Moon : Sun}>
+        <Section title={t('settings.theme.title')} icon={theme === 'dark' ? Moon : Sun}>
           <SettingRow
-            label="外观主题"
-            description="切换深色 / 浅色主题，所有页面自动适配"
+            label={t('settings.theme.appearance')}
+            description={t('settings.theme.appearanceDesc')}
           >
             <div className="flex gap-2">
               <button
@@ -269,7 +271,7 @@ export default function SettingsPage() {
                 )}
               >
                 <Moon className="h-3.5 w-3.5" />
-                深色
+                {t('settings.theme.dark')}
                 {theme === 'dark' && <Check className="h-3 w-3" />}
               </button>
               <button
@@ -282,7 +284,7 @@ export default function SettingsPage() {
                 )}
               >
                 <Sun className="h-3.5 w-3.5" />
-                浅色
+                {t('settings.theme.light')}
                 {theme === 'light' && <Check className="h-3 w-3" />}
               </button>
             </div>
@@ -290,10 +292,10 @@ export default function SettingsPage() {
         </Section>
 
         {/* Council Preferences */}
-        <Section title="议会偏好" icon={Users}>
+        <Section title={t('settings.council.title')} icon={Users}>
           <SettingRow
-            label="默认 Agent 数量"
-            description="新议会默认召集的智者数量"
+            label={t('settings.council.defaultAgentCount')}
+            description={t('settings.council.defaultAgentCountDesc')}
           >
             <div className="flex items-center gap-2">
               {[3, 5, 7].map((count) => (
@@ -318,8 +320,8 @@ export default function SettingsPage() {
           <div className="border-t border-border" />
 
           <SettingRow
-            label="发言速度"
-            description="控制 Agent 发言的显示速度"
+            label={t('settings.council.speechSpeed')}
+            description={t('settings.council.speechSpeedDesc')}
           >
             <div className="flex items-center gap-2">
               <Gauge className="h-4 w-4 text-text-dim" />
@@ -334,7 +336,7 @@ export default function SettingsPage() {
                       : 'border-border bg-bg-card text-text-soft hover:border-gold-dim'
                   )}
                 >
-                  {speed === 'slow' ? '慢速' : speed === 'normal' ? '正常' : '快速'}
+                  {speed === 'slow' ? t('settings.council.slow') : speed === 'normal' ? t('settings.council.normal') : t('settings.council.fast')}
                 </button>
               ))}
             </div>
@@ -342,10 +344,10 @@ export default function SettingsPage() {
         </Section>
 
         {/* Data Management */}
-        <Section title="数据管理" icon={Trash2}>
+        <Section title={t('settings.data.title')} icon={Trash2}>
           <SettingRow
-            label="导出数据"
-            description="导出议会历史、命运报告、时间线（支持 JSON / PDF / CSV）"
+            label={t('settings.data.export')}
+            description={t('settings.data.exportDesc')}
           >
             <div className="flex flex-wrap gap-2">
               <button
@@ -390,49 +392,49 @@ export default function SettingsPage() {
           <div className="border-t border-border" />
 
           <SettingRow
-            label="导入数据"
-            description="从 JSON 文件导入数据（将覆盖现有同名数据）"
+            label={t('settings.data.import')}
+            description={t('settings.data.importDesc')}
           >
             <button
               onClick={() => setConfirmImport(true)}
               className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-bg-card px-3 py-1.5 text-xs text-text-soft transition-colors hover:border-gold-dim hover:text-gold"
             >
               <Upload className="h-3.5 w-3.5" />
-              导入
+              {t('settings.data.importButton')}
             </button>
           </SettingRow>
 
           <div className="border-t border-border" />
 
           <SettingRow
-            label="清除历史记录"
-            description="删除所有议会记录和报告，不可恢复"
+            label={t('settings.data.clearHistory')}
+            description={t('settings.data.clearHistoryDesc')}
           >
             <button
               onClick={() => setConfirmClear(true)}
               className="inline-flex items-center gap-1.5 rounded-lg border border-red/30 bg-red/10 px-3 py-1.5 text-xs text-red transition-colors hover:bg-red/20"
             >
               <Trash2 className="h-3.5 w-3.5" />
-              清除
+              {t('settings.data.clearButton')}
             </button>
           </SettingRow>
         </Section>
 
         {/* About */}
-        <Section title="关于 LifeVerse" icon={Info}>
+        <Section title={t('settings.about.title')} icon={Info}>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-text-soft">版本</span>
+              <span className="text-sm text-text-soft">{t('settings.about.version')}</span>
               <span className="text-sm text-text-dim">v5.0.0</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-text-soft">技术栈</span>
+              <span className="text-sm text-text-soft">{t('settings.about.techStack')}</span>
               <span className="text-sm text-text-dim">
                 Next.js 15 · TypeScript · TailwindCSS
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-text-soft">使命</span>
+              <span className="text-sm text-text-soft">{t('settings.about.mission')}</span>
               <span className="text-sm text-text-dim">
                 Every life deserves its own universe
               </span>
@@ -440,7 +442,7 @@ export default function SettingsPage() {
 
             <div className="border-t border-border pt-3">
               <p className="text-xs leading-relaxed text-text-dim">
-                LifeVerse 帮助人们理解自己、理解过去、理解未来，并在重大选择时与智慧、记忆和未来版本的自己共同对话。
+                {t('settings.about.description')}
               </p>
             </div>
 
@@ -478,18 +480,11 @@ export default function SettingsPage() {
       {/* 清除历史记录确认弹窗（danger 变体） */}
       <ConfirmDialog
         open={confirmClear}
-        title="确认清除历史记录"
-        message={
-          <>
-            此操作将删除所有议会记录和命运报告，且
-            <span className="font-medium text-red">不可恢复</span>。
-            <br />
-            建议在清除前先导出数据备份。确定要继续吗？
-          </>
-        }
+        title={t('settings.data.confirmClearTitle')}
+        message={t('settings.data.confirmClearMessage')}
         variant="danger"
-        confirmText="确认清除"
-        cancelText="取消"
+        confirmText={t('settings.data.confirmClearButton')}
+        cancelText={t('common.cancel')}
         onConfirm={handleClearHistory}
         onCancel={() => setConfirmClear(false)}
       />
@@ -497,19 +492,11 @@ export default function SettingsPage() {
       {/* 导入数据确认弹窗（warning 变体） */}
       <ConfirmDialog
         open={confirmImport}
-        title="确认导入数据"
-        message={
-          <>
-            导入操作将用文件中的数据
-            <span className="font-medium text-orange">覆盖</span>
-            现有同名的议会记录与设置。
-            <br />
-            建议在导入前先导出当前数据备份。确定要继续吗？
-          </>
-        }
+        title={t('settings.data.confirmImportTitle')}
+        message={t('settings.data.confirmImportMessage')}
         variant="warning"
-        confirmText="继续导入"
-        cancelText="取消"
+        confirmText={t('settings.data.confirmImportButton')}
+        cancelText={t('common.cancel')}
         onConfirm={handleImport}
         onCancel={() => setConfirmImport(false)}
       />
