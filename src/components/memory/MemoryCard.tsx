@@ -90,7 +90,15 @@ export function MemoryCard({ memory, onClick }: MemoryCardProps) {
         : ('orange' as const);
 
   return (
-    <motion.div variants={cardItem}>
+    <motion.div
+      variants={cardItem}
+      whileHover={{
+        rotateY: 5,
+        rotateX: -5,
+        transition: { duration: 0.3 },
+      }}
+      style={{ transformStyle: 'preserve-3d', perspective: '1000px' }}
+    >
       <Card
         hover={false}
         onClick={() => onClick?.(memory)}
