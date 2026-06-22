@@ -127,7 +127,7 @@ function clearHistory(): void {
 export default function InnerDialoguePage() {
   const router = useRouter();
   const pathname = usePathname();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { isAuthenticated, isInitialized, checkAuth, token } = useAuthStore();
   const { canInnerDialogue, recordInnerDialogue, membership } =
     useMembershipStore();
@@ -233,6 +233,7 @@ export default function InnerDialoguePage() {
         body: JSON.stringify({
           message: userText.trim(),
           history: historyForApi,
+          locale,
         }),
       });
 
