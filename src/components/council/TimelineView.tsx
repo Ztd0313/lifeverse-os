@@ -12,16 +12,17 @@ import {
 } from 'lucide-react';
 import type { TimelineBranch } from '@/types';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 
 // ===== Node Time Labels =====
 
 const NODE_LABELS: Record<TimelineBranch['node'], string> = {
-  now: '现在',
-  '3m': '3个月后',
-  '1y': '1年后',
-  '5y': '5年后',
-  '10y': '10年后',
-  '20y': '20年后',
+  now: 'council.timelineView.nodeNow',
+  '3m': 'council.timelineView.node3m',
+  '1y': 'council.timelineView.node1y',
+  '5y': 'council.timelineView.node5y',
+  '10y': 'council.timelineView.node10y',
+  '20y': 'council.timelineView.node20y',
 };
 
 const NODE_COLORS: Record<TimelineBranch['node'], string> = {
@@ -118,6 +119,7 @@ interface BranchNodeProps {
 }
 
 function BranchNode({ branch, depth, index }: BranchNodeProps) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(depth < 2);
   const hasChildren = branch.children && branch.children.length > 0;
   const nodeColor = NODE_COLORS[branch.node] || '#c9a84c';
@@ -211,11 +213,11 @@ function BranchNode({ branch, depth, index }: BranchNodeProps) {
                 color: nodeColor,
               }}
             >
-              {NODE_LABELS[branch.node]}
+              {t(NODE_LABELS[branch.node])}
             </span>
             {isRoot && (
               <span className="rounded bg-gold-soft px-2 py-0.5 text-[10px] font-medium text-gold">
-                起点
+                {t('council.timelineView.origin')}
               </span>
             )}
           </div>
@@ -223,9 +225,9 @@ function BranchNode({ branch, depth, index }: BranchNodeProps) {
             <button
               onClick={() => setExpanded(!expanded)}
               className="flex items-center gap-1 rounded px-2 py-0.5 text-[10px] text-text-dim transition-colors hover:text-gold"
-              aria-label={expanded ? '折叠' : '展开'}
+              aria-label={expanded ? t('council.timelineView.collapse') : t('council.timelineView.expand')}
             >
-              {expanded ? '折叠' : '展开'}
+              {expanded ? t('council.timelineView.collapse') : t('council.timelineView.expand')}
               <motion.div
                 animate={{ rotate: expanded ? 90 : 0 }}
                 transition={{ duration: 0.2 }}
@@ -247,12 +249,12 @@ function BranchNode({ branch, depth, index }: BranchNodeProps) {
           <ProgressBar
             value={branch.happinessProb}
             color="#5de8a0"
-            label="幸福概率"
+            label={t('council.timelineView.metricHappiness')}
           />
           <ProgressBar
             value={branch.regretProb}
             color="#e85d5d"
-            label="后悔概率"
+            label={t('council.timelineView.metricRegret')}
           />
         </div>
 
@@ -260,7 +262,7 @@ function BranchNode({ branch, depth, index }: BranchNodeProps) {
         <div className="flex flex-wrap gap-x-4 gap-y-1">
           <MetricItem
             icon={DollarSign}
-            label="收入"
+            label={t('council.timelineView.metricIncome')}
             value={branch.incomeChange}
             color={
               branch.incomeChange.startsWith('+') ? '#5de8a0' : '#e85d5d'
@@ -268,7 +270,7 @@ function BranchNode({ branch, depth, index }: BranchNodeProps) {
           />
           <MetricItem
             icon={branch.incomeChange.startsWith('+') ? TrendingUp : TrendingDown}
-            label="成长"
+            label={t('council.timelineView.metricGrowth')}
             value={branch.growthRate}
             color="#5da0e8"
           />
@@ -311,6 +313,7 @@ interface TimelineViewProps {
 // ===== Main Component =====
 
 export default function TimelineView({ branches }: TimelineViewProps) {
+  const { t } = useTranslation();
   const [allExpanded, setAllExpanded] = useState(true);
 
   const totalNodes = useMemo(() => {
@@ -327,7 +330,7 @@ export default function TimelineView({ branches }: TimelineViewProps) {
       <div className="flex flex-col items-center justify-center py-20 text-center">
         <Circle className="mb-4 h-12 w-12 text-text-dim" />
         <p className="text-sm text-text-dim">
-          暂无时间线数据
+          {t('council.timelineView.emptyState')}
         </p>
       </div>
     );
@@ -339,10 +342,10 @@ export default function TimelineView({ branches }: TimelineViewProps) {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h2 className="font-serif text-2xl text-text">
-            <span className="text-gradient-gold">命运时间线</span>
+            <span className="text-gradient-gold">{t('council.timelineView.title')}</span>
           </h2>
           <p className="mt-1 text-xs text-text-dim">
-            共 {totalNodes} 个节点 · 推演未来分支
+            {t('council.timelineView.subtitle', { count: totalNodes })}
           </p>
         </div>
         <button
@@ -350,7 +353,7 @@ export default function TimelineView({ branches }: TimelineViewProps) {
           className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-bg-card px-3 py-1.5 text-xs text-text-soft transition-colors hover:border-gold-dim hover:text-gold"
         >
           <Zap className="h-3.5 w-3.5" />
-          {allExpanded ? '全部折叠' : '全部展开'}
+          {allExpanded ? t('council.timelineView.collapseAll') : t('council.timelineView.expandAll')}
         </button>
       </div>
 
@@ -369,14 +372,14 @@ export default function TimelineView({ branches }: TimelineViewProps) {
 
       {/* Legend */}
       <div className="mt-8 flex flex-wrap items-center gap-4 rounded-lg border border-border bg-bg-card/40 p-4">
-        <span className="text-xs text-text-dim">图例:</span>
-        {Object.entries(NODE_LABELS).map(([key, label]) => (
+        <span className="text-xs text-text-dim">{t('council.timelineView.legend')}</span>
+        {Object.entries(NODE_LABELS).map(([key, labelKey]) => (
           <div key={key} className="flex items-center gap-1.5">
             <span
               className="h-2 w-2 rounded-full"
               style={{ background: NODE_COLORS[key as TimelineBranch['node']] }}
             />
-            <span className="text-[10px] text-text-soft">{label}</span>
+            <span className="text-[10px] text-text-soft">{t(labelKey)}</span>
           </div>
         ))}
       </div>
