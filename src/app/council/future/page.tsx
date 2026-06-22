@@ -328,7 +328,7 @@ function InputPhase({ question, setQuestion, onSubmit, t }: InputPhaseProps) {
             >
               <span className="mb-1 text-3xl">{agent.avatar}</span>
               <span className="text-xs font-medium text-text">{agent.name}</span>
-              <span className="mt-0.5 text-[10px] text-text-dim">
+              <span className="mt-0.5 text-xs text-text-dim">
                 {agent.philosophy}
               </span>
             </div>
@@ -384,7 +384,7 @@ function SpeakingPhase({ question, onComplete, t }: SpeakingPhaseProps) {
       </div>
 
       {/* 进度指示 */}
-      <div className="flex items-center justify-center gap-2">
+      <div className="flex items-center justify-center gap-2 flex-wrap">
         {TIME_AGENTS.map((agent, idx) => (
           <div
             key={agent.id}
@@ -422,7 +422,7 @@ function SpeakingPhase({ question, onComplete, t }: SpeakingPhaseProps) {
               <span className="text-xs font-medium text-text">
                 {currentAgent.name}
               </span>
-              <span className="text-[10px] text-text-dim">
+              <span className="text-xs text-text-dim">
                 · {currentAgent.philosophy}
               </span>
             </div>
@@ -563,12 +563,12 @@ function FutureReport({ question, onRestart, onViewTimeline, t }: FutureReportPr
           </h3>
           <RadarChart
             data={MOCK_RADAR}
-            size={220}
+            size={200}
             showLabels={true}
             showGrid={true}
             animated={true}
           />
-          <p className="mt-2 text-[10px] text-text-dim">
+          <p className="mt-2 text-xs text-text-dim">
             {t('future.radarSubtitle')}
           </p>
         </Card>
