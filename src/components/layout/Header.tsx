@@ -16,31 +16,59 @@ import { useTranslation } from '@/lib/i18n';
 /**
  * 导航链接配置
  *
- * 完整导航：首页、智慧议会、未来议会、记忆星球、市场、内心对话、
- * 重逢对话、我的 Agent、历史
- * （移动端通过汉堡菜单展开）
+ * 顶层导航（7 项）：首页、命运议会、对话▾、档案▾、市场、我的 Agent、历史
+ * - 直链项（direct）：直接跳转
+ * - 下拉组（dropdown）：桌面端 hover 展开，移动端抽屉展开为缩进子项
  *
  * labelKey 对应 i18n 翻译路径
  */
-const NAV_LINKS = [
-  { href: '/', labelKey: 'nav.home' },
-  { href: '/council/wisdom', labelKey: 'nav.wisdomCouncil' },
-  { href: '/council/future', labelKey: 'nav.futureCouncil' },
-  { href: '/memory', labelKey: 'nav.memoryPlanet' },
-  { href: '/marketplace', labelKey: 'nav.marketplace' },
-  { href: '/inner-dialogue', labelKey: 'nav.innerDialogue' },
-  { href: '/reunion-dialogue', labelKey: 'nav.reunionDialogue' },
-  { href: '/agents', labelKey: 'nav.myAgent' },
-  { href: '/history', labelKey: 'nav.history' },
-  { href: '/dream', labelKey: 'nav.dreamArchive' },
-] as const;
+
+/** 直链导航项 */
+type NavLinkItem = {
+  type: 'direct';
+  href: string;
+  labelKey: string;
+};
+
+/** 下拉分组导航项 */
+type NavDropdownItem = {
+  type: 'dropdown';
+  labelKey: string;
+  items: { href: string; labelKey: string }[];
+};
+
+type NavItem = NavLinkItem | NavDropdownItem;
+
+const NAV_ITEMS: readonly NavItem[] = [
+  { type: 'direct', href: '/', labelKey: 'nav.home' },
+  { type: 'direct', href: '/council', labelKey: 'nav.council' },
+  {
+    type: 'dropdown',
+    labelKey: 'nav.navDialogue',
+    items: [
+      { href: '/inner-dialogue', labelKey: 'nav.innerDialogue' },
+      { href: '/reunion-dialogue', labelKey: 'nav.reunionDialogue' },
+    ],
+  },
+  {
+    type: 'dropdown',
+    labelKey: 'nav.navArchive',
+    items: [
+      { href: '/memory', labelKey: 'nav.memoryPlanet' },
+      { href: '/dream', labelKey: 'nav.dreamArchive' },
+    ],
+  },
+  { type: 'direct', href: '/marketplace', labelKey: 'nav.marketplace' },
+  { type: 'direct', href: '/agents', labelKey: 'nav.myAgent' },
+  { type: 'direct', href: '/history', labelKey: 'nav.history' },
+];
 
 /**
  * 全局头部导航组件
  *
  * 布局：
  * - 左侧：LifeVerse logo（serif 字体，金色）
- * - 中间：导航链接（首页 / 智慧议会 / 未来议会 / 记忆星球 / 市场 / 内心对话 / 重逢对话 / 我的 Agent / 历史）
+ * - 中间：导航链接（首页 / 命运议会 / 对话▾ / 档案▾ / 市场 / 我的 Agent / 历史）
  * - 右侧：会员链接 + 会员标识 + 设置按钮 + 用户头像下拉菜单 + 移动端汉堡菜单按钮
  *
  * 特性：
@@ -57,11 +85,13 @@ export function Header() {
   const [scrolled, setScrolled] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [userMenuOpen, setUserMenuOpen] = React.useState(false);
+  const [openDropdown, setOpenDropdown] = React.useState<string | null>(null);
   const pathname = usePathname();
   const { membership } = useMembershipStore();
   const { isAuthenticated, user, logout } = useAuthStore();
   const { t } = useTranslation();
   const userMenuRef = React.useRef<HTMLDivElement>(null);
+  const dropdownTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -76,6 +106,7 @@ export function Header() {
   React.useEffect(() => {
     setMobileOpen(false);
     setUserMenuOpen(false);
+    setOpenDropdown(null);
   }, [pathname]);
 
   // ESC 键关闭移动端菜单
@@ -119,6 +150,29 @@ export function Header() {
     return pathname.startsWith(href);
   };
 
+  /** 判断下拉分组是否处于活跃状态（组内任一子项匹配当前路径） */
+  const isDropdownActive = (items: { href: string }[]): boolean =>
+    items.some((item) => isActive(item.href));
+
+  /** 桌面端下拉：鼠标移入展开 */
+  const handleDropdownEnter = (key: string) => {
+    if (dropdownTimeoutRef.current) {
+      clearTimeout(dropdownTimeoutRef.current);
+      dropdownTimeoutRef.current = null;
+    }
+    setOpenDropdown(key);
+  };
+
+  /** 桌面端下拉：鼠标移出延迟关闭（避免经过触发器与面板间隙时误关） */
+  const handleDropdownLeave = () => {
+    if (dropdownTimeoutRef.current) {
+      clearTimeout(dropdownTimeoutRef.current);
+    }
+    dropdownTimeoutRef.current = setTimeout(() => {
+      setOpenDropdown(null);
+    }, 150);
+  };
+
   /** 处理退出登录 */
   const handleLogout = () => {
     setUserMenuOpen(false);
@@ -152,21 +206,91 @@ export function Header() {
             className="hidden items-center gap-6 lg:flex"
             aria-label={t('nav.mainNav')}
           >
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                aria-current={isActive(link.href) ? 'page' : undefined}
-                className={cn(
-                  'text-sm transition-colors hover:text-gold',
-                  isActive(link.href)
-                    ? 'text-gold'
-                    : 'text-text-soft'
-                )}
-              >
-                {t(link.labelKey)}
-              </Link>
-            ))}
+            {NAV_ITEMS.map((item) => {
+              if (item.type === 'direct') {
+                const active = isActive(item.href);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    aria-current={active ? 'page' : undefined}
+                    className={cn(
+                      'text-sm transition-colors hover:text-gold',
+                      active ? 'text-gold' : 'text-text-soft'
+                    )}
+                  >
+                    {t(item.labelKey)}
+                  </Link>
+                );
+              }
+
+              const groupActive = isDropdownActive(item.items);
+              const isOpen = openDropdown === item.labelKey;
+
+              return (
+                <div
+                  key={item.labelKey}
+                  className="relative"
+                  onMouseEnter={() => handleDropdownEnter(item.labelKey)}
+                  onMouseLeave={handleDropdownLeave}
+                >
+                  <button
+                    type="button"
+                    aria-expanded={isOpen}
+                    aria-haspopup="menu"
+                    className={cn(
+                      'flex items-center gap-1 text-sm transition-colors hover:text-gold',
+                      groupActive ? 'text-gold' : 'text-text-soft'
+                    )}
+                  >
+                    {t(item.labelKey)}
+                    <ChevronDown
+                      size={14}
+                      className={cn(
+                        'transition-transform',
+                        isOpen && 'rotate-180'
+                      )}
+                    />
+                  </button>
+
+                  <AnimatePresence>
+                    {isOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                        transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                        className="absolute left-0 top-full z-50 mt-2 w-44 overflow-hidden rounded-xl border border-border bg-bg-soft shadow-[0_8px_32px_rgba(0,0,0,0.3)]"
+                        role="menu"
+                      >
+                        <nav className="py-1">
+                          {item.items.map((sub) => {
+                            const subActive = isActive(sub.href);
+                            return (
+                              <Link
+                                key={sub.href}
+                                href={sub.href}
+                                onClick={() => setOpenDropdown(null)}
+                                aria-current={subActive ? 'page' : undefined}
+                                className={cn(
+                                  'flex items-center px-4 py-2.5 text-sm transition-colors hover:bg-bg-card',
+                                  subActive
+                                    ? 'text-gold'
+                                    : 'text-text-soft hover:text-gold'
+                                )}
+                                role="menuitem"
+                              >
+                                {t(sub.labelKey)}
+                              </Link>
+                            );
+                          })}
+                        </nav>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
           </nav>
 
           {/* 右侧：会员链接 + 会员标识 + 设置按钮 + 语言切换器 + 用户头像下拉菜单 + 移动端汉堡菜单 */}
@@ -382,22 +506,51 @@ export function Header() {
                 className="flex-1 space-y-1 overflow-y-auto px-4 py-6"
                 aria-label={t('nav.mainNav')}
               >
-                {NAV_LINKS.map((link) => {
-                  const active = isActive(link.href);
+                {NAV_ITEMS.map((item) => {
+                  if (item.type === 'direct') {
+                    const active = isActive(item.href);
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        aria-current={active ? 'page' : undefined}
+                        className={cn(
+                          'flex items-center rounded-lg px-4 py-3 text-sm transition-all',
+                          active
+                            ? 'border border-gold-dim bg-gold-soft/30 text-gold'
+                            : 'border border-transparent text-text-soft hover:bg-bg-card hover:text-text'
+                        )}
+                      >
+                        {t(item.labelKey)}
+                      </Link>
+                    );
+                  }
+
+                  // 下拉分组：移动端展开为带缩进的子项列表（不用 hover）
                   return (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      aria-current={active ? 'page' : undefined}
-                      className={cn(
-                        'flex items-center rounded-lg px-4 py-3 text-sm transition-all',
-                        active
-                          ? 'border border-gold-dim bg-gold-soft/30 text-gold'
-                          : 'border border-transparent text-text-soft hover:bg-bg-card hover:text-text'
-                      )}
-                    >
-                      {t(link.labelKey)}
-                    </Link>
+                    <div key={item.labelKey} className="space-y-1">
+                      <p className="px-4 py-2 text-xs font-medium uppercase tracking-wide text-text-dim">
+                        {t(item.labelKey)}
+                      </p>
+                      {item.items.map((sub) => {
+                        const active = isActive(sub.href);
+                        return (
+                          <Link
+                            key={sub.href}
+                            href={sub.href}
+                            aria-current={active ? 'page' : undefined}
+                            className={cn(
+                              'flex items-center rounded-lg py-2.5 pl-8 pr-4 text-sm transition-all',
+                              active
+                                ? 'border border-gold-dim bg-gold-soft/30 text-gold'
+                                : 'border border-transparent text-text-soft hover:bg-bg-card hover:text-text'
+                            )}
+                          >
+                            {t(sub.labelKey)}
+                          </Link>
+                        );
+                      })}
+                    </div>
                   );
                 })}
 
