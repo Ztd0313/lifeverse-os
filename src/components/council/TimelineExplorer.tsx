@@ -12,6 +12,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 
 /**
  * 时间线分支类型
@@ -70,15 +71,15 @@ export interface TimelineExplorerProps {
 // ===== 常量映射 =====
 
 const STRATEGY_LABELS: Record<TimelineStrategy, string> = {
-  conservative: '保守',
-  balanced: '平衡',
-  aggressive: '激进',
+  conservative: 'council.timelineExplorer.strategyConservative',
+  balanced: 'council.timelineExplorer.strategyBalanced',
+  aggressive: 'council.timelineExplorer.strategyAggressive',
 };
 
 const HORIZON_LABELS: Record<TimelineHorizon, string> = {
-  '1y': '1 年后',
-  '5y': '5 年后',
-  '10y': '10 年后',
+  '1y': 'council.timelineExplorer.horizon1y',
+  '5y': 'council.timelineExplorer.horizon5y',
+  '10y': 'council.timelineExplorer.horizon10y',
 };
 
 // ===== 动画变体 =====
@@ -112,10 +113,11 @@ interface MetricBarProps {
 }
 
 function MetricBar({ icon: Icon, label, value, color, suffix = '%' }: MetricBarProps) {
+  const { t } = useTranslation();
   return (
     <div className="flex items-center gap-2">
       <Icon className="h-3 w-3 shrink-0" style={{ color }} />
-      <span className="w-14 shrink-0 text-[10px] text-text-dim">{label}</span>
+      <span className="w-14 shrink-0 text-[10px] text-text-dim">{t(label)}</span>
       <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-border">
         <motion.div
           className="h-full rounded-full"
@@ -145,6 +147,7 @@ interface SnapshotCardProps {
 }
 
 function SnapshotCard({ snapshot, color, index }: SnapshotCardProps) {
+  const { t } = useTranslation();
   const isPositiveIncome = snapshot.incomeChange.trim().startsWith('+');
   return (
     <motion.div
@@ -161,7 +164,7 @@ function SnapshotCard({ snapshot, color, index }: SnapshotCardProps) {
             color,
           }}
         >
-          {HORIZON_LABELS[snapshot.horizon]}
+          {t(HORIZON_LABELS[snapshot.horizon])}
         </span>
         <span className="text-[10px] text-text-dim">#{index + 1}</span>
       </div>
@@ -176,13 +179,13 @@ function SnapshotCard({ snapshot, color, index }: SnapshotCardProps) {
       <div className="space-y-1.5">
         <MetricBar
           icon={Heart}
-          label="幸福"
+          label="council.timelineExplorer.metricHappiness"
           value={snapshot.happinessProb}
           color="#5de8a0"
         />
         <MetricBar
           icon={AlertCircle}
-          label="后悔"
+          label="council.timelineExplorer.metricRegret"
           value={snapshot.regretProb}
           color="#e85d5d"
         />
@@ -192,7 +195,7 @@ function SnapshotCard({ snapshot, color, index }: SnapshotCardProps) {
           ) : (
             <TrendingDown className="h-3 w-3 shrink-0 text-red" />
           )}
-          <span className="w-14 shrink-0 text-[10px] text-text-dim">收入</span>
+          <span className="w-14 shrink-0 text-[10px] text-text-dim">{t('council.timelineExplorer.metricIncome')}</span>
           <span
             className="text-[11px] font-semibold tabular-nums"
             style={{ color: isPositiveIncome ? '#5de8a0' : '#e85d5d' }}
@@ -214,6 +217,7 @@ interface BranchRowProps {
 }
 
 function BranchRow({ branch, defaultExpanded = false }: BranchRowProps) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(defaultExpanded);
 
   return (
@@ -245,7 +249,7 @@ function BranchRow({ branch, defaultExpanded = false }: BranchRowProps) {
                   color: branch.color,
                 }}
               >
-                {STRATEGY_LABELS[branch.strategy]}
+                {t(STRATEGY_LABELS[branch.strategy])}
               </span>
             </div>
             <p className="mt-0.5 text-xs text-text-dim">{branch.subtitle}</p>
@@ -311,11 +315,12 @@ export function TimelineExplorer({
   branches,
   className,
 }: TimelineExplorerProps) {
+  const { t } = useTranslation();
   if (branches.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <AlertCircle className="mb-3 h-10 w-10 text-text-dim" />
-        <p className="text-sm text-text-dim">暂无时间线推演数据</p>
+        <p className="text-sm text-text-dim">{t('council.timelineExplorer.emptyState')}</p>
       </div>
     );
   }
@@ -326,10 +331,10 @@ export function TimelineExplorer({
       <div className="mb-4 flex items-center justify-between">
         <div>
           <h3 className="font-serif text-xl text-text">
-            <span className="text-gradient-gold">时间线推演</span>
+            <span className="text-gradient-gold">{t('council.timelineExplorer.title')}</span>
           </h3>
           <p className="mt-1 text-xs text-text-dim">
-            3 条分支 · 9 个时间节点 · 点击展开详情
+            {t('council.timelineExplorer.subtitle')}
           </p>
         </div>
       </div>
@@ -352,7 +357,7 @@ export function TimelineExplorer({
 
       {/* 图例 */}
       <div className="mt-5 flex flex-wrap items-center gap-4 rounded-lg border border-border bg-bg-card/40 p-3">
-        <span className="text-xs text-text-dim">图例:</span>
+        <span className="text-xs text-text-dim">{t('council.timelineExplorer.legend')}</span>
         {branches.map((b) => (
           <div key={b.strategy} className="flex items-center gap-1.5">
             <span
@@ -360,7 +365,7 @@ export function TimelineExplorer({
               style={{ background: b.color }}
             />
             <span className="text-[10px] text-text-soft">
-              {STRATEGY_LABELS[b.strategy]}：{b.title}
+              {t(STRATEGY_LABELS[b.strategy])}：{b.title}
             </span>
           </div>
         ))}
