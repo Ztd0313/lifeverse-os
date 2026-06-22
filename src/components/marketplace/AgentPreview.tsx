@@ -7,7 +7,9 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { RadarChart } from '@/components/charts/RadarChart';
 import { TypingText } from '@/components/council/TypingText';
+import { VoiceTrial } from '@/components/membership/VoiceTrial';
 import { useMarketplaceStore } from '@/stores/marketplace-store';
+import { useMembershipStore } from '@/stores/membership-store';
 import type { MarketplaceAgent } from '@/lib/marketplace-data';
 import { cn } from '@/lib/utils';
 
@@ -29,6 +31,8 @@ export interface AgentPreviewProps {
  */
 export function AgentPreview({ agent, onClose }: AgentPreviewProps) {
   const { ownedAgents, cart, addToCart, removeFromCart } = useMarketplaceStore();
+  const { membership } = useMembershipStore();
+  const isMember = membership.tier !== 'free';
 
   // ESC 键关闭
   React.useEffect(() => {
@@ -139,10 +143,22 @@ export function AgentPreview({ agent, onClose }: AgentPreviewProps) {
                 <div className="space-y-4">
                   {/* 示例发言 */}
                   <div>
-                    <h3 className="mb-2 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-text-dim">
-                      <Quote className="h-3 w-3" />
-                      示例发言
-                    </h3>
+                    <div className="mb-2 flex items-center justify-between">
+                      <h3 className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-text-dim">
+                        <Quote className="h-3 w-3" />
+                        示例发言
+                      </h3>
+                      {/* 语音试听 — 会员可用，非会员点击跳转升级 */}
+                      <VoiceTrial
+                        text={agent.sample}
+                        enabled={isMember || agent.isFree}
+                        onUpgradeClick={() => {
+                          onClose();
+                          window.location.href = '/membership';
+                        }}
+                        size="sm"
+                      />
+                    </div>
                     <div className="rounded-lg border border-border bg-bg-soft p-4">
                       <div className="flex gap-2">
                         <span className="text-lg leading-tight">{agent.avatar}</span>
