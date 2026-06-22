@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, BookOpen, Star, MessageSquare, Sparkles } from 'lucide-react';
 import HistoryList from '@/components/council/HistoryList';
 import { Header } from '@/components/layout/Header';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import type { HistoryEntry } from '@/types';
 import { useTranslation } from '@/lib/i18n';
 
@@ -81,6 +82,7 @@ export default function HistoryPage() {
   const { t } = useTranslation();
   const [entries, setEntries] = useState<HistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteTarget, setDeleteTarget] = useState<HistoryEntry | null>(null);
 
   // Load history from localStorage or use mock data
   useEffect(() => {
@@ -115,13 +117,19 @@ export default function HistoryPage() {
   }, []);
 
   const handleSelect = (entry: HistoryEntry) => {
-    router.push(`/report/${entry.id}`);
+    router.push(`/history/${entry.id}`);
   };
 
-  const handleDelete = (id: string) => {
-    const updated = entries.filter((e) => e.id !== id);
+  const handleDelete = (entry: HistoryEntry) => {
+    setDeleteTarget(entry);
+  };
+
+  const confirmDelete = () => {
+    if (!deleteTarget) return;
+    const updated = entries.filter((e) => e.id !== deleteTarget.id);
     setEntries(updated);
     saveToStorage(updated);
+    setDeleteTarget(null);
   };
 
   const handleFavorite = (id: string) => {
@@ -237,6 +245,18 @@ export default function HistoryPage() {
         />
       </main>
     </div>
+
+      {/* Delete confirmation dialog */}
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title={t('history.confirmDelete')}
+        message={t('history.confirmDeleteDesc')}
+        confirmText={t('history.delete')}
+        cancelText={t('history.cancel')}
+        variant="danger"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </>
   );
 }
