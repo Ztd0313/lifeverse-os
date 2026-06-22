@@ -10,15 +10,16 @@
  * - 修订号：Bug 修复和小优化
  */
 
-export const APP_VERSION = 'v5.5.1';
+export const APP_VERSION = 'v5.6.0';
 
 export const VERSION_INFO = {
   version: APP_VERSION,
   buildDate: '2026-06-23',
   codename: 'Life OS',
   changes: [
-    '人物市场所有角色均支持试听预览（无需购买/会员即可查看卡片内容）',
-    '试听弹窗内保留语音朗读功能（会员可用）',
+    '顶部导航栏重构：合并智慧议会与未来议会为「命运议会」入口',
+    '导航精简为 7 个顶层项，新增「对话」「档案」下拉分组菜单',
+    '下拉菜单支持 hover 展开与 Framer Motion 动画，移动端抽屉展开为缩进子项',
   ],
 };
 
