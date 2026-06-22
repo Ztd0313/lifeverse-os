@@ -282,3 +282,21 @@ function isRetryableError(error: unknown): boolean {
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+/** Locale 到语言指令的映射 */
+const LOCALE_LANGUAGE_INSTRUCTIONS: Record<string, string> = {
+  zh: '请始终使用简体中文回复。',
+  en: 'Please always respond in English.',
+  ja: '常に日本語で回答してください。',
+  ko: '항상 한국어로 답변해 주세요.',
+};
+
+/**
+ * 获取语言指令字符串
+ * @param locale 用户界面语言 ('zh' | 'en' | 'ja' | 'ko')
+ * @returns 语言指令字符串，未知 locale 默认中文
+ */
+export function getLanguageInstruction(locale?: string): string {
+  if (!locale) return LOCALE_LANGUAGE_INSTRUCTIONS.zh;
+  return LOCALE_LANGUAGE_INSTRUCTIONS[locale] ?? LOCALE_LANGUAGE_INSTRUCTIONS.zh;
+}
