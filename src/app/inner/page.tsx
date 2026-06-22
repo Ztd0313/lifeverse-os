@@ -1,9 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Brain, MessageSquare } from 'lucide-react';
+import { Brain, MessageSquare } from 'lucide-react';
 import { ParticleBackground } from '@/components/effects/ParticleBackground';
 import { Header } from '@/components/layout/Header';
 import { Card } from '@/components/ui/Card';
@@ -154,12 +153,6 @@ export default function InnerPage() {
             >
               <MessageSquare className="h-4 w-4" />
               开始内心对话
-            </Button>
-            <Button asChild variant="secondary" size="lg">
-              <Link href="/">
-                <ArrowLeft className="h-4 w-4" />
-                返回首页
-              </Link>
             </Button>
           </motion.div>
 
