@@ -304,7 +304,7 @@ export default function AgentsPage() {
       <ParticleBackground />
       <Header />
 
-      <main className="relative z-10 min-h-screen px-6 pb-24 pt-24">
+      <main className="relative z-10 min-h-screen px-4 sm:px-6 pb-24 pt-24">
         <motion.div
           variants={staggerContainer}
           initial="initial"
@@ -358,7 +358,7 @@ export default function AgentsPage() {
                     )}
                   </div>
                   {/* 进度条 */}
-                  <div className="h-1.5 w-44 overflow-hidden rounded-full bg-border">
+                  <div className="h-1.5 w-full max-w-[176px] overflow-hidden rounded-full bg-border">
                     <div
                       className="h-full rounded-full bg-gold transition-all duration-500"
                       style={{
