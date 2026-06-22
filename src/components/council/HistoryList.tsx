@@ -64,7 +64,7 @@ const itemVariants: Variants = {
 interface HistoryListProps {
   entries: HistoryEntry[];
   onSelect?: (entry: HistoryEntry) => void;
-  onDelete?: (id: string) => void;
+  onDelete?: (entry: HistoryEntry) => void;
   onFavorite?: (id: string) => void;
 }
 
@@ -73,7 +73,7 @@ interface HistoryListProps {
 interface HistoryCardProps {
   entry: HistoryEntry;
   onSelect?: (entry: HistoryEntry) => void;
-  onDelete?: (id: string) => void;
+  onDelete?: (entry: HistoryEntry) => void;
   onFavorite?: (id: string) => void;
 }
 
@@ -156,7 +156,7 @@ function HistoryCard({ entry, onSelect, onDelete, onFavorite }: HistoryCardProps
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                onDelete?.(entry.id);
+                onDelete?.(entry);
               }}
               className="rounded p-1 transition-colors hover:bg-red/10"
               aria-label={t('council.historyList.delete')}
