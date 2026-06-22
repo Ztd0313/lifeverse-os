@@ -21,6 +21,7 @@ import {
   getPlanetMeta,
 } from '@/lib/mock-memories';
 import type { MemoryItem } from '@/types';
+import { useTranslation } from '@/lib/i18n';
 
 /**
  * 对话消息
@@ -87,6 +88,7 @@ export function MemoryDialogue({ memory, onClose }: MemoryDialogueProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const openingSentRef = useRef<string | null>(null);
+  const { locale } = useTranslation();
 
   /** 自动滚动到最新消息 */
   const scrollToBottom = useCallback(() => {
@@ -134,6 +136,7 @@ export function MemoryDialogue({ memory, onClose }: MemoryDialogueProps) {
             memory: currentMemory,
             message: userText.trim(),
             history: historyForApi,
+            locale,
           }),
         });
 
