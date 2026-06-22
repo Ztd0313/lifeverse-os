@@ -10,7 +10,7 @@
  * - 验证中国大陆手机号格式（1 开头，第二位 3-9，共 11 位）
  * - 生成 6 位随机数字验证码
  * - 实际短信发送需要阿里云短信服务，当前为 mock：验证码存内存
- * - 开发环境（NODE_ENV !== 'production'）返回 debugCode 便于测试
+ * - 测试阶段：始终返回固定测试验证码 888888，方便用户体验
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -19,18 +19,8 @@ import { userStore } from '@/lib/user-store';
 /** 中国大陆手机号正则：1[3-9] 开头，共 11 位 */
 const PHONE_REGEX = /^1[3-9]\d{9}$/;
 
-/** 发送频率限制：同一手机号 60 秒内只能发送一次 */
-const SEND_INTERVAL_MS = 60 * 1000;
-
-/** 记录每个手机号最近一次发送时间，用于频率限制 */
-const lastSendTime = new Map<string, number>();
-
-/**
- * 生成 6 位随机数字验证码
- */
-function generateCode(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
+/** 固定测试验证码（正式上线短信服务后移除） */
+const TEST_CODE = '888888';
 
 /**
  * POST /api/auth/sms/send
@@ -63,35 +53,15 @@ export async function POST(
       );
     }
 
-    // ===== 频率限制：60 秒内只能发送一次 =====
-    const lastTime = lastSendTime.get(phone);
-    if (lastTime && Date.now() - lastTime < SEND_INTERVAL_MS) {
-      const remainSeconds = Math.ceil(
-        (SEND_INTERVAL_MS - (Date.now() - lastTime)) / 1000
-      );
-      return NextResponse.json(
-        {
-          success: false,
-          error: `发送过于频繁，请 ${remainSeconds} 秒后再试`,
-        },
-        { status: 429 }
-      );
-    }
+    // ===== 存入固定测试验证码 =====
+    userStore.saveSmsCode(phone, TEST_CODE);
 
-    // ===== 生成验证码并存入内存 =====
-    const code = generateCode();
-    userStore.saveSmsCode(phone, code);
-    lastSendTime.set(phone, Date.now());
-
-    // TODO: 对接阿里云短信服务实际发送短信
-    // await aliyunSmsClient.send(phone, `您的验证码是 ${code}，5 分钟内有效`);
-
-    // ===== 始终返回验证码便于测试 =====
-    // 当前为测试阶段，生产环境也返回验证码，方便用户体验
-    // 正式上线短信服务后可移除 debugCode
+    // ===== 返回测试验证码 =====
+    // 当前为测试阶段，使用固定验证码 888888
+    // 正式上线短信服务后替换为随机验证码
     return NextResponse.json({
       success: true,
-      debugCode: code,
+      debugCode: TEST_CODE,
     });
   } catch (error) {
     console.error('[SMS Send API] 发送验证码失败：', error);
