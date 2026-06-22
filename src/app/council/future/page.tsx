@@ -2,10 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import Link from 'next/link';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import {
-  ArrowLeft,
   Send,
   Clock,
   Sparkles,
@@ -697,12 +695,6 @@ function FutureReport({ question, onRestart, onViewTimeline, t, radar, report, i
           <RotateCcw className="h-4 w-4" />
           {t('future.restart')}
         </Button>
-        <Button asChild variant="ghost">
-          <Link href="/council">
-            <ArrowLeft className="h-4 w-4" />
-            {t('future.backCouncil')}
-          </Link>
-        </Button>
       </div>
     </motion.div>
   );
@@ -802,16 +794,11 @@ export default function FutureCouncilPage() {
       {/* 粒子背景 */}
       <ParticleBackground />
 
+      <Header />
+
       {/* 顶部导航 */}
-      <header className="sticky top-0 z-20 border-b border-border bg-bg/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-          <button
-            onClick={() => router.push('/council')}
-            className="inline-flex items-center gap-1.5 text-sm text-text-soft transition-colors hover:text-gold"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            {t('future.backCouncil')}
-          </button>
+      <header className="sticky top-16 z-20 border-b border-border bg-bg/80 backdrop-blur-md">
+        <div className="mx-auto flex max-w-5xl items-center justify-end px-4 py-3">
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-gold" />
             <span className="text-sm font-medium text-text">{t('future.headerTitle')}</span>
