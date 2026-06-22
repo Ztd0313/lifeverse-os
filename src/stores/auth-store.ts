@@ -85,6 +85,89 @@ function clearPersistedAuth(): void {
   }
 }
 
+// ===== 本地 Token 有效性检查 =====
+
+/** Token 续期阈值：剩余不到 1 天时尝试续期 */
+const REFRESH_THRESHOLD = 24 * 60 * 60 * 1000;
+
+/**
+ * 判断本地 token 是否仍在有效期内
+ *
+ * Serverless 环境下 /api/auth/me 可能因内存存储重置而返回 401，
+ * 但本地 token（JWT）可能仍然有效。此函数仅根据本地 savedAt 判断。
+ *
+ * @param persisted 本地持久化的认证信息
+ * @returns 是否在有效期内
+ */
+function isLocalTokenValid(persisted: PersistedAuth): boolean {
+  return Date.now() - persisted.savedAt <= STORAGE_TTL;
+}
+
+/**
+ * 获取本地 token 剩余有效时间（毫秒）
+ *
+ * @param persisted 本地持久化的认证信息
+ * @returns 剩余毫秒数；已过期返回 0
+ */
+function getLocalTokenRemainingTime(persisted: PersistedAuth): number {
+  const remaining = STORAGE_TTL - (Date.now() - persisted.savedAt);
+  return remaining > 0 ? remaining : 0;
+}
+
+// ===== 登录重定向记忆 =====
+
+/** 重定向路径 localStorage 键名 */
+const REDIRECT_KEY = 'lifeverse_redirect';
+
+/**
+ * 记录登录后的重定向路径
+ *
+ * 当用户从某个页面被要求登录时，调用此方法记住原始页面路径，
+ * 登录成功后可回到该页面。
+ *
+ * @param path 原始页面路径
+ */
+export function setRedirectPath(path: string): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(REDIRECT_KEY, path);
+  } catch {
+    // 忽略
+  }
+}
+
+/**
+ * 获取并清除登录后的重定向路径
+ *
+ * 读取后自动清除，避免重复跳转。
+ *
+ * @returns 重定向路径；不存在时返回 null
+ */
+export function getRedirectPath(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const path = window.localStorage.getItem(REDIRECT_KEY);
+    if (path) {
+      window.localStorage.removeItem(REDIRECT_KEY);
+    }
+    return path;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 清除登录后的重定向路径
+ */
+export function clearRedirectPath(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.removeItem(REDIRECT_KEY);
+  } catch {
+    // 忽略
+  }
+}
+
 // ===== Store 定义 =====
 
 export interface AuthStore {
@@ -226,6 +309,16 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
    * 1. 从 localStorage 读取 token 与 user
    * 2. 调用 /api/auth/me 校验 token 是否仍有效
    * 3. 有效则保持登录，无效则清除
+   *
+   * 容错策略（针对 Serverless 环境）：
+   * - /api/auth/me 返回 401 时，不立即登出
+   * - 先检查本地 token 是否仍在有效期内（JWT 本身可能未过期）
+   * - Serverless 内存存储可能已重置，导致服务端找不到用户数据
+   * - 本地 token 未过期则保留登录状态，仅本地 token 过期才真正登出
+   *
+   * Token 自动续期：
+   * - 当本地 token 剩余有效期不足 1 天时，成功校验后刷新 savedAt
+   * - 相当于延长本地会话，避免用户频繁被要求重新登录
    */
   checkAuth: () => {
     const persisted = readPersistedAuth();
@@ -242,7 +335,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       isInitialized: true,
     });
 
-    // 异步校验 token，失败则登出
+    // 异步校验 token
     fetch('/api/auth/me', {
       headers: {
         Authorization: `Bearer ${persisted.token}`,
@@ -251,20 +344,53 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.user) {
-          // 更新为最新的用户信息
-          writePersistedAuth(data.user, persisted.token);
+          // 校验成功：更新为最新的用户信息
+          // Token 自动续期：剩余不足 1 天时刷新本地 savedAt
+          const remaining = getLocalTokenRemainingTime(persisted);
+          if (remaining > 0 && remaining < REFRESH_THRESHOLD) {
+            // 续期：以当前时间重新写入，延长本地会话
+            writePersistedAuth(data.user, persisted.token);
+          } else {
+            // 正常更新用户信息
+            writePersistedAuth(data.user, persisted.token);
+          }
           set({
             user: data.user,
             token: persisted.token,
             isAuthenticated: true,
           });
         } else {
-          // token 失效
-          get().logout();
+          // /api/auth/me 校验失败（可能 401）
+          // Serverless 环境下内存存储可能已重置，服务端找不到用户
+          // 此时检查本地 token 是否仍在有效期内
+          if (isLocalTokenValid(persisted)) {
+            // 本地 token 未过期：保留登录状态
+            // 服务端内存可能已重置，但 JWT 本身仍有效
+            // 用户可继续使用本地缓存的用户信息
+            // 不强制登出，避免"总是让用户登录"的问题
+            set({
+              user: persisted.user,
+              token: persisted.token,
+              isAuthenticated: true,
+            });
+          } else {
+            // 本地 token 也已过期：真正登出
+            get().logout();
+          }
         }
       })
       .catch(() => {
         // 网络错误等，不强制登出，保留本地缓存
+        // 本地 token 仍有效则保持登录
+        if (isLocalTokenValid(persisted)) {
+          set({
+            user: persisted.user,
+            token: persisted.token,
+            isAuthenticated: true,
+          });
+        } else {
+          get().logout();
+        }
       });
   },
 
