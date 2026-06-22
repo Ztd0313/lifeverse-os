@@ -1,34 +1,43 @@
+'use client';
+
 import * as React from 'react';
 import Link from 'next/link';
 import { Logo } from '@/components/brand/Logo';
 import { APP_VERSION } from '@/lib/version';
+import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher';
+import { useTranslation } from '@/lib/i18n';
 
 /**
- * Footer 导航链接分组
+ * Footer 导航链接分组配置
+ *
+ * titleKey / labelKey 对应 i18n 翻译路径
  */
-const FOOTER_LINKS: { title: string; links: { href: string; label: string }[] }[] = [
+const FOOTER_LINKS: {
+  titleKey: string;
+  links: { href: string; labelKey: string }[];
+}[] = [
   {
-    title: '议会',
+    titleKey: 'footer.councils',
     links: [
-      { href: '/council/wisdom', label: '智慧议会' },
-      { href: '/council/future', label: '未来议会' },
-      { href: '/council', label: '议会入口' },
+      { href: '/council/wisdom', labelKey: 'footer.wisdomCouncil' },
+      { href: '/council/future', labelKey: 'footer.futureCouncil' },
+      { href: '/council', labelKey: 'footer.councilEntry' },
     ],
   },
   {
-    title: '生命模块',
+    titleKey: 'footer.lifeModules',
     links: [
-      { href: '/memory', label: '记忆星球' },
-      { href: '/inner', label: '内心世界' },
-      { href: '/dream', label: '梦想档案' },
-      { href: '/reunion', label: '重逢' },
+      { href: '/memory', labelKey: 'footer.memoryPlanet' },
+      { href: '/inner', labelKey: 'footer.innerWorld' },
+      { href: '/dream', labelKey: 'footer.dreamArchive' },
+      { href: '/reunion', labelKey: 'footer.reunion' },
     ],
   },
   {
-    title: '系统',
+    titleKey: 'footer.system',
     links: [
-      { href: '/history', label: '历史' },
-      { href: '/settings', label: '设置' },
+      { href: '/history', labelKey: 'footer.history' },
+      { href: '/settings', labelKey: 'footer.settings' },
     ],
   },
 ];
@@ -40,12 +49,14 @@ const FOOTER_LINKS: { title: string; links: { href: string; label: string }[] }[
  * - LifeVerse 品牌名（serif 字体，金色）
  * - Slogan: Every life deserves its own universe.
  * - 导航链接分组（议会 / 生命模块 / 系统）
+ * - 语言切换器
  * - 版权信息（动态年份）
  *
- * 纯展示组件，无 hooks，可作为服务端组件使用。
+ * 使用 i18n 翻译所有可见文本。
  */
 export function Footer() {
   const currentYear = new Date().getFullYear();
+  const { t } = useTranslation();
 
   return (
     <footer className="relative z-10 border-t border-border bg-bg-soft/60">
@@ -55,24 +66,24 @@ export function Footer() {
           <div className="flex flex-col items-center text-center md:items-start md:text-left">
             <Logo size="lg" />
             <p className="mt-2 text-sm text-text-soft">
-              Every life deserves its own universe.
+              {t('footer.slogan')}
             </p>
             <div className="my-3 h-px w-24 bg-gradient-to-r from-transparent via-gold-dim to-transparent" />
             <p className="text-xs text-text-dim">
-              生命宇宙 · 和塑造你的人，一起决定未来
+              {t('footer.tagline')}
             </p>
           </div>
 
           {/* 导航链接分组 */}
           {FOOTER_LINKS.map((group) => (
             <div
-              key={group.title}
+              key={group.titleKey}
               className="flex flex-col items-center md:items-start"
             >
               <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-gold">
-                {group.title}
+                {t(group.titleKey)}
               </h3>
-              <nav aria-label={group.title}>
+              <nav aria-label={t(group.titleKey)}>
                 <ul className="flex flex-col gap-2">
                   {group.links.map((link) => (
                     <li key={link.href}>
@@ -80,7 +91,7 @@ export function Footer() {
                         href={link.href}
                         className="text-xs text-text-soft transition-colors hover:text-gold"
                       >
-                        {link.label}
+                        {t(link.labelKey)}
                       </Link>
                     </li>
                   ))}
@@ -90,13 +101,18 @@ export function Footer() {
           ))}
         </div>
 
+        {/* 语言切换器 */}
+        <div className="mt-8 flex justify-center">
+          <LanguageSwitcher />
+        </div>
+
         {/* 版权信息 */}
         <div className="mt-10 border-t border-border pt-6 text-center">
           <p className="text-xs text-text-dim">
-            © {currentYear} LifeVerse. All rights reserved.
+            © {currentYear} LifeVerse. {t('footer.copyright')}
           </p>
           <p className="mt-1 text-xs text-text-dim/60">
-            {APP_VERSION} · 生命宇宙操作系统
+            {APP_VERSION} · {t('footer.systemName')}
           </p>
         </div>
       </div>
