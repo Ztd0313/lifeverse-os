@@ -117,7 +117,7 @@ function MetricBar({ icon: Icon, label, value, color, suffix = '%' }: MetricBarP
   return (
     <div className="flex items-center gap-2">
       <Icon className="h-3 w-3 shrink-0" style={{ color }} />
-      <span className="w-14 shrink-0 text-[10px] text-text-dim">{t(label)}</span>
+      <span className="w-12 sm:w-14 shrink-0 text-[10px] text-text-dim">{t(label)}</span>
       <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-border">
         <motion.div
           className="h-full rounded-full"
@@ -230,7 +230,7 @@ function BranchRow({ branch, defaultExpanded = false }: BranchRowProps) {
       <button
         type="button"
         onClick={() => setExpanded((prev) => !prev)}
-        className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left transition-colors hover:bg-bg-card-hover/40"
+        className="flex w-full items-center justify-between gap-3 px-4 py-3 sm:px-5 sm:py-4 text-left transition-colors hover:bg-bg-card-hover/40"
         aria-expanded={expanded}
       >
         <div className="flex items-center gap-3">
