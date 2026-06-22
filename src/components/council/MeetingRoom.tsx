@@ -336,8 +336,25 @@ export function MeetingRoom({
 
   // 环形布局参数
   const agentCount = personas.length;
-  const containerSize = 520; // 环形容器尺寸
-  const radius = agentCount > 0 ? Math.min(200, 180 + agentCount * 2) : 200;
+  const [containerSize, setContainerSize] = useState(520);
+  useEffect(() => {
+    const updateSize = () => {
+      const screenWidth = window.innerWidth;
+      if (screenWidth < 380) {
+        setContainerSize(Math.min(screenWidth - 32, 300));
+      } else if (screenWidth < 640) {
+        setContainerSize(Math.min(screenWidth - 48, 360));
+      } else if (screenWidth < 1024) {
+        setContainerSize(420);
+      } else {
+        setContainerSize(520);
+      }
+    };
+    updateSize();
+    window.addEventListener('resize', updateSize);
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);
+  const radius = Math.min(containerSize / 2 - 60, 120 + agentCount * 2);
   const center = containerSize / 2;
 
   // 计算 Agent 位置
@@ -406,14 +423,14 @@ export function MeetingRoom({
   return (
     <div
       className={cn(
-        'flex flex-col h-full min-h-[600px]',
+        'flex flex-col h-full min-h-[400px] sm:min-h-[500px] lg:min-h-[600px]',
         'bg-bg/50 backdrop-blur-sm',
         className
       )}
     >
       {/* ===== 顶部：议会标题 + 议题 ===== */}
-      <header className="flex-shrink-0 border-b border-border px-6 py-4">
-        <div className="flex items-center justify-between gap-4">
+      <header className="flex-shrink-0 border-b border-border px-4 py-3 sm:px-6 sm:py-4">
+        <div className="flex items-center justify-between gap-2 sm:gap-4 flex-wrap">
           <div className="flex items-center gap-3">
             <motion.h2
               className="font-serif text-lg text-gradient-gold"
@@ -539,7 +556,7 @@ export function MeetingRoom({
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <div className="flex flex-col items-center justify-center w-32 h-32 rounded-full border border-gold-dim/30 bg-bg-card/40 backdrop-blur-sm">
+            <div className="flex flex-col items-center justify-center w-24 h-24 sm:w-32 sm:h-32 rounded-full border border-gold-dim/30 bg-bg-card/40 backdrop-blur-sm">
               {isReport ? (
                 <motion.div
                   animate={{ rotate: 360 }}
@@ -604,7 +621,7 @@ export function MeetingRoom({
                 <AgentCard
                   persona={persona}
                   status={status}
-                  size="sm"
+                  size={containerSize < 400 ? 'sm' : 'sm'}
                   onClick={() => onAgentClick?.(persona)}
                 />
               </motion.div>
@@ -615,7 +632,7 @@ export function MeetingRoom({
 
       {/* ===== 冲突可视化列表（紧凑模式） ===== */}
       {conflicts.length > 0 && (
-        <div className="flex-shrink-0 px-6 pb-2">
+        <div className="flex-shrink-0 px-4 sm:px-6 pb-2">
           <ConflictVisualization
             conflicts={conflicts}
             personas={personas}
@@ -624,7 +641,7 @@ export function MeetingRoom({
       )}
 
       {/* ===== 底部：对话流 ===== */}
-      <div className="flex-1 min-h-0 flex flex-col px-6 pb-4">
+      <div className="flex-1 min-h-0 flex flex-col px-4 sm:px-6 pb-4">
         <div className="flex items-center gap-2 mb-2">
           <span className="text-xs text-text-soft font-medium">{t('council.meetingRoom.dialogFlow')}</span>
           <span className="text-[10px] text-text-dim">
