@@ -90,7 +90,7 @@ function HistoryCard({ entry, onSelect, onDelete, onFavorite }: HistoryCardProps
       className="group relative"
     >
       {/* Timeline dot */}
-      <div className="absolute left-[-28px] top-6 z-10">
+      <div className="absolute left-[-20px] sm:left-[-28px] top-6 z-10">
         <motion.div
           className="h-3 w-3 rounded-full border-2 border-bg"
           style={{ background: typeColor }}
@@ -413,7 +413,7 @@ export default function HistoryList({
           variants={listVariants}
           initial="hidden"
           animate="visible"
-          className="relative space-y-3 border-l border-dashed border-border pl-6"
+          className="relative space-y-3 border-l border-dashed border-border pl-4 sm:pl-6"
         >
           <AnimatePresence mode="popLayout">
             {filteredEntries.map((entry) => (
