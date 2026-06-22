@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, BookOpen, Star, MessageSquare, Sparkles } from 'lucide-react';
 import HistoryList from '@/components/council/HistoryList';
 import type { HistoryEntry } from '@/types';
+import { useTranslation } from '@/lib/i18n';
 
 // ===== Mock data for demo =====
 
@@ -76,6 +77,7 @@ const STORAGE_KEY = 'lifeverse-history';
 
 export default function HistoryPage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [entries, setEntries] = useState<HistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -141,7 +143,7 @@ export default function HistoryPage() {
           transition={{ duration: 1.5, repeat: Infinity }}
           className="text-sm text-text-dim"
         >
-          加载历史记录...
+          {t('history.loading')}
         </motion.div>
       </div>
     );
@@ -157,14 +159,14 @@ export default function HistoryPage() {
             className="inline-flex items-center gap-1.5 text-sm text-text-soft transition-colors hover:text-gold"
           >
             <ArrowLeft className="h-4 w-4" />
-            返回首页
+            {t('history.backHome')}
           </button>
           <button
             onClick={() => router.push('/council')}
             className="inline-flex items-center gap-1.5 rounded-lg bg-gold-soft px-3 py-1.5 text-sm text-gold transition-colors hover:bg-gold hover:text-bg"
           >
             <Sparkles className="h-3.5 w-3.5" />
-            新议会
+            {t('history.newCouncil')}
           </button>
         </div>
       </header>
@@ -183,10 +185,10 @@ export default function HistoryPage() {
             </div>
             <div>
               <h1 className="font-serif text-3xl text-text">
-                <span className="text-gradient-gold">命运日记</span>
+                <span className="text-gradient-gold">{t('history.title')}</span>
               </h1>
               <p className="text-xs text-text-dim">
-                回顾你的每一次命运议会
+                {t('history.subtitle')}
               </p>
             </div>
           </div>
@@ -196,7 +198,7 @@ export default function HistoryPage() {
             <div className="rounded-lg border border-border bg-bg-card p-4">
               <div className="flex items-center gap-2 text-text-dim">
                 <MessageSquare className="h-4 w-4" />
-                <span className="text-xs">总议会数</span>
+                <span className="text-xs">{t('history.totalCouncils')}</span>
               </div>
               <p className="mt-1 font-serif text-2xl font-bold text-text">
                 {totalCouncils}
@@ -205,7 +207,7 @@ export default function HistoryPage() {
             <div className="rounded-lg border border-border bg-bg-card p-4">
               <div className="flex items-center gap-2 text-text-dim">
                 <Star className="h-4 w-4" />
-                <span className="text-xs">收藏数</span>
+                <span className="text-xs">{t('history.favorites')}</span>
               </div>
               <p className="mt-1 font-serif text-2xl font-bold text-gold">
                 {favoriteCount}
@@ -214,7 +216,7 @@ export default function HistoryPage() {
             <div className="rounded-lg border border-border bg-bg-card p-4 sm:col-span-1">
               <div className="flex items-center gap-2 text-text-dim">
                 <Sparkles className="h-4 w-4" />
-                <span className="text-xs">议会类型</span>
+                <span className="text-xs">{t('history.councilTypes')}</span>
               </div>
               <p className="mt-1 font-serif text-2xl font-bold text-text">
                 {new Set(entries.map((e) => e.councilType)).size}
