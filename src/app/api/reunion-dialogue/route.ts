@@ -33,7 +33,7 @@
 
 import { NextResponse } from 'next/server';
 import { getAuthUser } from '@/lib/auth';
-import { chatCompletion, isOpenAIConfigured, DEFAULT_MODEL } from '@/lib/ai/openai-client';
+import { chatCompletion, isOpenAIConfigured, DEFAULT_MODEL, getLanguageInstruction } from '@/lib/ai/openai-client';
 import {
   buildReunionDialogueSystemPrompt,
   parseDialogueResponse,
@@ -63,6 +63,7 @@ interface ReunionDialogueRequestBody {
   history?: unknown;
   timeDirection?: unknown;
   yearsOffset?: unknown;
+  locale?: unknown;
 }
 
 /**
@@ -130,7 +131,7 @@ export async function POST(
       );
     }
 
-    const { message, history, timeDirection, yearsOffset } = body;
+    const { message, history, timeDirection, yearsOffset, locale } = body;
 
     // ===== 3. 参数校验 =====
     if (typeof message !== 'string' || message.trim().length === 0) {
@@ -217,7 +218,7 @@ export async function POST(
 
     // ===== 6. 调用 DeepSeek 生成回复 =====
     try {
-      const systemPrompt = buildReunionDialogueSystemPrompt(context);
+      const systemPrompt = buildReunionDialogueSystemPrompt(context) + '\n\n' + getLanguageInstruction(typeof locale === 'string' ? locale : 'zh');
 
       // 将对话历史拼接到 user message 中（DeepSeek 单轮调用）
       const timeDistance = formatTimeDistance(currentAge, targetAge);
