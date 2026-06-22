@@ -10,17 +10,19 @@
  * - 修订号：Bug 修复和小优化
  */
 
-export const APP_VERSION = 'v5.1.0';
+export const APP_VERSION = 'v5.2.0';
 
 export const VERSION_INFO = {
   version: APP_VERSION,
   buildDate: '2026-06-23',
   codename: 'Life OS',
   changes: [
-    '线上测试验证码登录',
-    '版本号显示系统',
-    'Next.js 15.2.3 安全升级',
-    'Suspense 边界修复',
+    '修复议会一键使用按钮（替换无效成员ID）',
+    '修复召集议会按钮无反馈问题（新增Toast提示）',
+    'Header新增用户头像下拉菜单（个人中心入口）',
+    '改善登录态保持（Serverless容错+Token自动续期）',
+    '新增i18n国际化系统（中文/英文/日语/韩语）',
+    'Header/Footer集成语言切换器',
   ],
 };
 
