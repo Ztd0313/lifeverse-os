@@ -31,7 +31,7 @@
 
 import { NextResponse } from 'next/server';
 import { getAuthUser } from '@/lib/auth';
-import { chatCompletion, isOpenAIConfigured, DEFAULT_MODEL } from '@/lib/ai/openai-client';
+import { chatCompletion, isOpenAIConfigured, DEFAULT_MODEL, getLanguageInstruction } from '@/lib/ai/openai-client';
 import {
   buildInnerDialogueSystemPrompt,
   parseDialogueResponse,
@@ -59,6 +59,7 @@ interface InnerDialogueRequestBody {
   message?: unknown;
   history?: unknown;
   emotionState?: unknown;
+  locale?: unknown;
 }
 
 /** 合法的情感状态取值 */
@@ -140,7 +141,7 @@ export async function POST(
       );
     }
 
-    const { message, history, emotionState } = body;
+    const { message, history, emotionState, locale } = body;
 
     // ===== 3. 参数校验 =====
     if (typeof message !== 'string' || message.trim().length === 0) {
@@ -196,7 +197,7 @@ export async function POST(
 
     // ===== 6. 调用 DeepSeek 生成回复 =====
     try {
-      const systemPrompt = buildInnerDialogueSystemPrompt(context);
+      const systemPrompt = buildInnerDialogueSystemPrompt(context) + '\n\n' + getLanguageInstruction(typeof locale === 'string' ? locale : 'zh');
 
       // 将对话历史拼接到 user message 中（DeepSeek 单轮调用）
       const historyStr =
