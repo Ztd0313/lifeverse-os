@@ -47,7 +47,7 @@ export function RoundIndicator({
   return (
     <div
       className={cn(
-        'flex items-center justify-center gap-3 select-none',
+        'flex items-center justify-center gap-1.5 sm:gap-3 select-none',
         className
       )}
       role="progressbar"
@@ -62,7 +62,7 @@ export function RoundIndicator({
         const label = t(ROUND_NAME_KEYS[round] ?? '', {});
 
         return (
-          <div key={round} className="flex items-center gap-3">
+          <div key={round} className="flex items-center gap-1.5 sm:gap-3">
             {/* 圆点 + 标签 */}
             <motion.div
               className="flex items-center gap-2"
@@ -115,7 +115,7 @@ export function RoundIndicator({
 
               <span
                 className={cn(
-                  'text-xs font-medium tracking-wide transition-colors duration-300',
+                  'text-[10px] sm:text-xs font-medium tracking-wide transition-colors duration-300',
                   isActive
                     ? 'text-gold'
                     : isDone
@@ -129,7 +129,7 @@ export function RoundIndicator({
 
             {/* 连接线 */}
             {round < totalRounds && (
-              <div className="h-px w-8 bg-border" aria-hidden="true" />
+              <div className="h-px w-4 sm:w-8 bg-border" aria-hidden="true" />
             )}
           </div>
         );
