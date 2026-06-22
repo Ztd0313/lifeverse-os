@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { motion, type Variants } from 'framer-motion';
 import { ArrowLeft, Users, Clock, Loader2, type LucideIcon } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ParticleBackground } from '@/components/effects/ParticleBackground';
 import { Header } from '@/components/layout/Header';
@@ -114,16 +113,6 @@ export default function CouncilHubPage() {
           animate="visible"
           className="mx-auto flex max-w-5xl flex-col items-center"
         >
-          {/* 返回首页按钮 */}
-          <motion.div variants={fadeInUp} className="mb-8 self-start">
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/">
-                <ArrowLeft className="h-4 w-4" />
-                {t('council.backHome')}
-              </Link>
-            </Button>
-          </motion.div>
-
           {/* 标题区 */}
           <motion.div variants={fadeInUp} className="mb-4 text-center">
             <span className="inline-flex items-center rounded-full border border-gold-dim bg-gold-soft px-4 py-1 text-xs tracking-widest text-gold">
