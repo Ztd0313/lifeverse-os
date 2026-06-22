@@ -15,6 +15,7 @@ import {
   ScrollText,
   Search,
   X,
+  AlertCircle,
 } from 'lucide-react';
 import { useCouncilStore } from '@/stores/council-store';
 import { useAuthStore } from '@/stores/auth-store';
@@ -40,6 +41,7 @@ import DestinyReportComponent from '@/components/council/DestinyReport';
 import TimelineView from '@/components/council/TimelineView';
 import { ParticleBackground } from '@/components/effects/ParticleBackground';
 import { Header } from '@/components/layout/Header';
+import { useTranslation } from '@/lib/i18n';
 
 // ===== 常量 =====
 
@@ -358,6 +360,43 @@ function unifiedMemberToPersona(member: UnifiedCouncilMember): Persona {
   };
 }
 
+// ===== Toast Component =====
+
+/**
+ * 轻量级提示组件
+ *
+ * 用于在用户操作未满足条件时给出即时反馈，
+ * 避免按钮"静默无反应"的体验问题。
+ */
+interface ToastProps {
+  message: string;
+  type: 'warning' | 'success';
+}
+
+function Toast({ message, type }: ToastProps) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -20, x: '-50%' }}
+      animate={{ opacity: 1, y: 0, x: '-50%' }}
+      exit={{ opacity: 0, y: -20, x: '-50%' }}
+      transition={{ duration: 0.25 }}
+      className={cn(
+        'fixed left-1/2 top-20 z-50 flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium shadow-lg backdrop-blur-md',
+        type === 'warning'
+          ? 'border border-amber-400/50 bg-amber-500/15 text-amber-200'
+          : 'border border-gold-dim bg-gold-soft/20 text-gold'
+      )}
+    >
+      {type === 'warning' ? (
+        <AlertCircle className="h-4 w-4 shrink-0" />
+      ) : (
+        <Check className="h-4 w-4 shrink-0" />
+      )}
+      <span>{message}</span>
+    </motion.div>
+  );
+}
+
 // ===== Question Input Component =====
 
 interface QuestionInputProps {
@@ -377,6 +416,7 @@ const QUESTION_SUGGESTIONS: { text: string; type: QuestionType }[] = [
 ];
 
 function QuestionInput({ question, setQuestion, onSubmit, canSubmit }: QuestionInputProps) {
+  const { t } = useTranslation();
   return (
     <motion.div
       variants={pageVariants}
@@ -395,10 +435,10 @@ function QuestionInput({ question, setQuestion, onSubmit, canSubmit }: QuestionI
           <Sparkles className="h-8 w-8 text-gold" />
         </motion.div>
         <h1 className="font-serif text-3xl text-text md:text-4xl">
-          <span className="text-gradient-gold">提出你的命运之问</span>
+          <span className="text-gradient-gold">{t('council.askDestiny')}</span>
         </h1>
         <p className="mt-2 text-sm text-text-soft">
-          智者议会将为你多角度审视这个决定
+          {t('council.wisdomSubtitle')}
         </p>
       </div>
 
@@ -407,7 +447,7 @@ function QuestionInput({ question, setQuestion, onSubmit, canSubmit }: QuestionI
         <textarea
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
-          placeholder="输入你正在纠结的人生问题..."
+          placeholder={t('council.questionPlaceholder')}
           rows={3}
           className="w-full resize-none rounded-lg border border-border bg-bg-card p-4 text-base text-text placeholder:text-text-dim focus:border-gold-dim focus:outline-none"
           onKeyDown={(e) => {
@@ -420,7 +460,7 @@ function QuestionInput({ question, setQuestion, onSubmit, canSubmit }: QuestionI
 
       {/* Suggestions */}
       <div>
-        <p className="mb-3 text-xs text-text-dim">或者试试这些问题:</p>
+        <p className="mb-3 text-xs text-text-dim">{t('council.tryQuestions')}</p>
         <div className="flex flex-wrap gap-2">
           {QUESTION_SUGGESTIONS.map((suggestion, index) => (
             <button
@@ -465,6 +505,7 @@ function MemberSelection({
   onStart,
   canStart,
 }: MemberSelectionProps) {
+  const { t } = useTranslation();
   const [category, setCategory] = useState<
     (typeof CATEGORY_FILTER_OPTIONS)[number]['value']
   >('all');
@@ -504,14 +545,14 @@ function MemberSelection({
             <div className="flex items-center gap-2">
               <Check className="h-4 w-4 text-gold" />
               <span className="text-sm font-medium text-text">
-                已选成员（{selectedMembers.length}/{MAX_MEMBERS}）
+                {t('council.selectedMembers')}（{selectedMembers.length}/{MAX_MEMBERS}）
               </span>
             </div>
             <span className="text-xs text-text-dim">
               {selectedMembers.length < MIN_MEMBERS
-                ? `至少还需选择 ${MIN_MEMBERS - selectedMembers.length} 位`
+                ? t('council.needMore', { count: MIN_MEMBERS - selectedMembers.length })
                 : selectedMembers.length >= MIN_MEMBERS
-                  ? '已满足最低人数，可开始议会'
+                  ? t('council.enoughMembers')
                   : ''}
             </span>
           </div>
@@ -549,7 +590,7 @@ function MemberSelection({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="搜索成员名称、身份或专业领域..."
+            placeholder={t('council.searchPlaceholder')}
             className="w-full rounded-lg border border-border bg-bg-card py-2 pl-10 pr-4 text-sm text-text placeholder:text-text-dim focus:border-gold-dim focus:outline-none"
           />
           {searchQuery && (
@@ -587,12 +628,12 @@ function MemberSelection({
         {filteredMembers.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-text-dim">
             <Users className="mb-2 h-8 w-8" />
-            <p className="text-sm">没有找到匹配的成员</p>
+            <p className="text-sm">{t('council.noMembersFound')}</p>
             <button
               onClick={handleClearSearch}
               className="mt-2 text-xs text-gold hover:underline"
             >
-              清除筛选条件
+              {t('council.clearFilters')}
             </button>
           </div>
         ) : (
@@ -640,7 +681,7 @@ function MemberSelection({
                   )}
                   {member.source === 'custom' && (
                     <span className="mt-1 rounded-full bg-gold-soft px-1.5 py-0.5 text-[9px] text-gold">
-                      自定义
+                      {t('council.custom')}
                     </span>
                   )}
                 </motion.button>
@@ -664,8 +705,8 @@ function MemberSelection({
         >
           <Sparkles className="h-4 w-4" />
           {canStart
-            ? `召集议会（${selectedIds.length} 位智者）`
-            : `请选择 ${MIN_MEMBERS}-${MAX_MEMBERS} 位成员`}
+            ? t('council.conveneCouncil', { count: selectedIds.length })
+            : t('council.selectMembers', { min: MIN_MEMBERS, max: MAX_MEMBERS })}
         </button>
       </div>
     </motion.div>
@@ -675,6 +716,7 @@ function MemberSelection({
 // ===== Ritual Animation Component =====
 
 function RitualAnimation({ onComplete }: { onComplete: () => void }) {
+  const { t } = useTranslation();
   useEffect(() => {
     const timer = setTimeout(onComplete, 3000);
     return () => clearTimeout(timer);
@@ -727,7 +769,7 @@ function RitualAnimation({ onComplete }: { onComplete: () => void }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
       >
-        <span className="text-gradient-gold">议会正在召集...</span>
+        <span className="text-gradient-gold">{t('council.councilConvening')}</span>
       </motion.h2>
       <motion.p
         className="mt-2 text-sm text-text-dim"
@@ -735,7 +777,7 @@ function RitualAnimation({ onComplete }: { onComplete: () => void }) {
         animate={{ opacity: 1 }}
         transition={{ delay: 1 }}
       >
-        智者们正在从各自的世界汇聚而来
+        {t('council.sagesGathering')}
       </motion.p>
     </motion.div>
   );
@@ -765,6 +807,7 @@ function MeetingRoom({
   onNextRound,
   isLastRound,
 }: MeetingRoomProps) {
+  const { t } = useTranslation();
   const [visibleCount, setVisibleCount] = useState(0);
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -815,7 +858,7 @@ function MeetingRoom({
         <div className="flex items-center gap-2">
           <MessageCircle className="h-5 w-5 text-gold" />
           <h2 className="text-lg font-semibold text-text">
-            {ROUND_TITLES[currentRound] || `第 ${currentRound} 轮`}
+            {currentRound === 1 ? t('council.round1') : currentRound === 2 ? t('council.round2') : currentRound === 3 ? t('council.round3') : t('council.round', { round: currentRound })}
           </h2>
         </div>
         <div className="flex items-center gap-1">
@@ -943,11 +986,11 @@ function MeetingRoom({
             {isLastRound ? (
               <>
                 <ScrollText className="h-4 w-4" />
-                生成命运报告
+                {t('council.generateReport')}
               </>
             ) : (
               <>
-                下一轮
+                {t('council.nextRound')}
                 <Send className="h-4 w-4" />
               </>
             )}
@@ -964,6 +1007,7 @@ export default function WisdomCouncilPage() {
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated, isInitialized, checkAuth } = useAuthStore();
+  const { t } = useTranslation();
   const { customAgents, loadFromStorage } = useAgentStore();
   const {
     phase,
@@ -990,9 +1034,27 @@ export default function WisdomCouncilPage() {
   const [activeCombinationId, setActiveCombinationId] = useState<string | null>(
     null
   );
+  const [toast, setToast] = useState<{
+    message: string;
+    type: 'warning' | 'success';
+  } | null>(null);
+
+  /** 问题输入区域 ref（用于滚动定位） */
+  const questionInputRef = useRef<HTMLDivElement>(null);
+  /** 成员选择区域 ref（用于滚动定位） */
+  const memberSelectionRef = useRef<HTMLDivElement>(null);
 
   /** 合并后的所有可选成员 */
   const unifiedMembers = getUnifiedMembers(customAgents);
+
+  /** 显示提示信息（3 秒后自动消失） */
+  const showToast = useCallback(
+    (message: string, type: 'warning' | 'success' = 'warning') => {
+      setToast({ message, type });
+      setTimeout(() => setToast(null), 3000);
+    },
+    []
+  );
 
   /** 首次加载时校验登录态 */
   useEffect(() => {
@@ -1048,11 +1110,33 @@ export default function WisdomCouncilPage() {
     // 找出组合中存在于统一成员列表的成员 ID
     const validIds = combination.memberIds
       .map((mid) => unifiedMembers.find((m) => m.id === mid)?.id)
-      .filter((id): id is string => Boolean(id))
-      .slice(0, MAX_MEMBERS);
+      .filter((id): id is string => Boolean(id));
 
-    setSelectedIds(validIds);
+    // 截取到最大成员数
+    let finalIds = validIds.slice(0, MAX_MEMBERS);
+
+    // 如果有效成员不足 MIN_MEMBERS，从其他可用成员中补充
+    if (finalIds.length < MIN_MEMBERS) {
+      const supplementIds = unifiedMembers
+        .filter((m) => !finalIds.includes(m.id))
+        .map((m) => m.id);
+      finalIds = [...finalIds, ...supplementIds].slice(0, MAX_MEMBERS);
+    }
+
+    setSelectedIds(finalIds);
     setActiveCombinationId(combination.id);
+    showToast(
+      `已应用「${combination.name}」，选中 ${finalIds.length} 位成员`,
+      'success'
+    );
+
+    // 滚动到成员选择区域，给出视觉反馈
+    setTimeout(() => {
+      memberSelectionRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    }, 100);
   };
 
   /** 是否可以开始议会 */
@@ -1064,7 +1148,22 @@ export default function WisdomCouncilPage() {
 
   /** 处理开始议会 */
   const handleStartCouncil = () => {
-    if (!canStart || !questionInput.trim()) return;
+    if (!canStart) {
+      showToast('请先选择 3-6 位议会成员', 'warning');
+      memberSelectionRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+      return;
+    }
+    if (!questionInput.trim()) {
+      showToast('请先输入你的问题', 'warning');
+      questionInputRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+      return;
+    }
     setQuestion(questionInput, 'career');
     const selectedMembers = getMembersByIds(unifiedMembers, selectedIds);
     const selectedPersonas = selectedMembers.map(unifiedMemberToPersona);
@@ -1123,7 +1222,7 @@ export default function WisdomCouncilPage() {
         <main className="relative z-10 flex min-h-screen items-center justify-center">
           <div className="flex flex-col items-center gap-4 text-text-soft">
             <Loader2 size={32} className="animate-spin text-gold" />
-            <p className="text-sm">正在验证登录状态...</p>
+            <p className="text-sm">{t('council.verifying')}</p>
           </div>
         </main>
       </>
@@ -1140,11 +1239,11 @@ export default function WisdomCouncilPage() {
             className="inline-flex items-center gap-1.5 text-sm text-text-soft transition-colors hover:text-gold"
           >
             <ArrowLeft className="h-4 w-4" />
-            返回议会
+            {t('council.backCouncil')}
           </button>
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-text">
-              智慧议会
+              {t('council.wisdomCouncil')}
             </span>
             <span className="rounded-full bg-gold-soft px-2 py-0.5 text-[10px] text-gold">
               {formatSessionNumber(sessionNumber)}
@@ -1159,12 +1258,14 @@ export default function WisdomCouncilPage() {
           {/* IDLE: Question input + Recommended combinations + Member selection */}
           {phase === 'idle' && (
             <motion.div key="idle" className="space-y-10">
-              <QuestionInput
-                question={questionInput}
-                setQuestion={setQuestionInput}
-                onSubmit={handleStartCouncil}
-                canSubmit={canSubmit}
-              />
+              <div ref={questionInputRef}>
+                <QuestionInput
+                  question={questionInput}
+                  setQuestion={setQuestionInput}
+                  onSubmit={handleStartCouncil}
+                  canSubmit={canSubmit}
+                />
+              </div>
 
               {/* 推荐组合区域 */}
               <RecommendedCombinations
@@ -1173,13 +1274,15 @@ export default function WisdomCouncilPage() {
               />
 
               {/* 成员选择区域 */}
-              <MemberSelection
-                members={unifiedMembers}
-                selectedIds={selectedIds}
-                onToggle={toggleMember}
-                onStart={handleStartCouncil}
-                canStart={canStart}
-              />
+              <div ref={memberSelectionRef}>
+                <MemberSelection
+                  members={unifiedMembers}
+                  selectedIds={selectedIds}
+                  onToggle={toggleMember}
+                  onStart={handleStartCouncil}
+                  canStart={canStart}
+                />
+              </div>
             </motion.div>
           )}
 
@@ -1216,7 +1319,7 @@ export default function WisdomCouncilPage() {
                   className="inline-flex items-center gap-2 rounded-lg border border-border bg-bg-card px-5 py-2.5 text-sm font-medium text-text-soft transition-colors hover:border-gold-dim hover:text-gold card-hover"
                 >
                   <Eye className="h-4 w-4" />
-                  查看命运时间线
+                  {t('council.viewTimeline')}
                 </button>
               </div>
             </motion.div>
@@ -1232,13 +1335,20 @@ export default function WisdomCouncilPage() {
                   className="inline-flex items-center gap-2 rounded-lg border border-border bg-bg-card px-5 py-2.5 text-sm font-medium text-text-soft transition-colors hover:border-gold-dim hover:text-gold card-hover"
                 >
                   <ArrowLeft className="h-4 w-4" />
-                  返回报告
+                  {t('council.backReport')}
                 </button>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </main>
+
+      {/* 全局提示 */}
+      <AnimatePresence>
+        {toast && (
+          <Toast key="toast" message={toast.message} type={toast.type} />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
