@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ArrowLeft,
   Plus,
   Edit3,
   Trash2,
@@ -311,16 +310,6 @@ export default function AgentsPage() {
           animate="animate"
           className="mx-auto flex max-w-6xl flex-col gap-8"
         >
-          {/* ===== 顶部导航 ===== */}
-          <motion.div variants={fadeInUp} className="flex items-center justify-between">
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/">
-                <ArrowLeft className="h-4 w-4" />
-                {t('agents.backHome')}
-              </Link>
-            </Button>
-          </motion.div>
-
           {/* ===== Hero 区域 ===== */}
           <motion.div
             variants={fadeInUp}
