@@ -422,7 +422,7 @@ export default function ProfilePage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 }}
-              className="card-hover interactive mb-4 flex items-center gap-4 rounded-lg border border-border bg-bg-card p-5"
+              className="card-hover interactive mb-4 flex flex-col sm:flex-row items-center gap-4 rounded-lg border border-border bg-bg-card p-4 sm:p-5"
             >
               <div className="h-16 w-16 shrink-0 overflow-hidden rounded-full border-2 border-gold-dim bg-bg-soft">
                 {avatar ? (
@@ -459,7 +459,7 @@ export default function ProfilePage() {
             </motion.div>
 
             {/* 快速统计 */}
-            <div className="mb-4 grid grid-cols-3 gap-3">
+            <div className="mb-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -823,7 +823,7 @@ export default function ProfilePage() {
           </AnimatePresence>
 
           {/* ===== 保存按钮 ===== */}
-          <div className="mt-6 flex justify-end gap-3">
+          <div className="mt-6 flex justify-end gap-3 flex-wrap">
             <Button
               variant="secondary"
               size="md"
