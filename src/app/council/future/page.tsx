@@ -713,7 +713,7 @@ function FutureReport({ question, onRestart, onViewTimeline, t, radar, report, i
 export default function FutureCouncilPage() {
   const router = useRouter();
   const pathname = usePathname();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { isAuthenticated, isInitialized, checkAuth } = useAuthStore();
   const [phase, setPhase] = useState<FuturePhase>('idle');
   const [question, setQuestion] = useState('');
@@ -743,6 +743,7 @@ export default function FutureCouncilPage() {
           question,
           councilType: 'future',
           rounds: 2,
+          locale,
         }),
       });
       if (!response.ok) throw new Error('API failed');
