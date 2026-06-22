@@ -137,7 +137,7 @@ export function QuestionInput({
               type="button"
               onClick={() => handlePresetClick(preset)}
               className={cn(
-                'rounded-full border px-3 py-1 text-xs',
+                'rounded-full border px-3 py-2 text-xs',
                 'border-border bg-bg-soft text-text-soft',
                 'hover:border-gold-dim hover:text-gold',
                 'transition-colors duration-200'
@@ -199,7 +199,7 @@ export function QuestionInput({
           onClick={handleSubmit}
           disabled={!canSubmit}
           className={cn(
-            'relative flex items-center gap-2 rounded-lg px-5 py-2',
+            'relative flex items-center gap-2 rounded-lg px-5 py-2.5 sm:py-2',
             'text-sm font-medium transition-all duration-300',
             canSubmit
               ? 'bg-gold text-bg hover:bg-gold/90'
