@@ -10,18 +10,17 @@
  * - 修订号：Bug 修复和小优化
  */
 
-export const APP_VERSION = 'v5.4.0';
+export const APP_VERSION = 'v5.4.1';
 
 export const VERSION_INFO = {
   version: APP_VERSION,
   buildDate: '2026-06-23',
   codename: 'Life OS',
   changes: [
-    '智慧议会接入真实AI（DeepSeek）— 议会对话/命运报告/时间线均由AI生成',
-    '未来议会接入真实AI — 时间自己发言/雷达图/反思内容由AI生成',
-    '移除硬编码API Key（安全修复）',
-    '议会API失败时自动降级到Mock数据',
-    '新增AI加载状态和isMock提示标签',
+    '修复重逢对话时间标签翻译键值裸露问题（past-10/past-5/future-5/future-10）',
+    '修复AI回复语言与界面语言不匹配问题（全链路locale传递+语言指令）',
+    '所有AI API路由追加语言控制指令（zh/en/ja/ko）',
+    'langgraph-engine 6个节点均追加语言指令',
   ],
 };
 
