@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 
 /**
  * 轮次指示器 Props
@@ -16,12 +17,12 @@ interface RoundIndicatorProps {
 }
 
 /**
- * 轮次名称映射
+ * 轮次名称翻译 key 映射
  */
-const ROUND_NAMES: Record<number, string> = {
-  1: '表态',
-  2: '质疑',
-  3: '共识',
+const ROUND_NAME_KEYS: Record<number, string> = {
+  1: 'council.round.name1',
+  2: 'council.round.name2',
+  3: 'council.round.name3',
 };
 
 /**
@@ -40,6 +41,7 @@ export function RoundIndicator({
   totalRounds = 3,
   className,
 }: RoundIndicatorProps) {
+  const { t } = useTranslation();
   const rounds = Array.from({ length: totalRounds }, (_, i) => i + 1);
 
   return (
@@ -52,12 +54,12 @@ export function RoundIndicator({
       aria-valuenow={currentRound}
       aria-valuemin={1}
       aria-valuemax={totalRounds}
-      aria-label={`第 ${currentRound} 轮，共 ${totalRounds} 轮`}
+      aria-label={t('council.round.roundLabel', { round: currentRound, total: totalRounds })}
     >
       {rounds.map((round) => {
         const isActive = round === currentRound;
         const isDone = round < currentRound;
-        const label = ROUND_NAMES[round] ?? `第${round}轮`;
+        const label = t(ROUND_NAME_KEYS[round] ?? '', {});
 
         return (
           <div key={round} className="flex items-center gap-3">
@@ -121,7 +123,7 @@ export function RoundIndicator({
                       : 'text-text-dim'
                 )}
               >
-                第{round}轮 · {label}
+                {t('council.round.roundDotLabel', { round, name: label })}
               </span>
             </motion.div>
 
