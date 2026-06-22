@@ -1289,16 +1289,10 @@ export default function WisdomCouncilPage() {
 
   return (
     <div className="min-h-screen bg-bg">
+      <Header />
       {/* Top bar */}
-      <header className="sticky top-0 z-20 border-b border-border bg-bg/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-          <button
-            onClick={() => router.push('/council')}
-            className="inline-flex items-center gap-1.5 text-sm text-text-soft transition-colors hover:text-gold"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            {t('council.backCouncil')}
-          </button>
+      <header className="sticky top-16 z-20 border-b border-border bg-bg/80 backdrop-blur-md">
+        <div className="mx-auto flex max-w-5xl items-center justify-end px-4 py-3">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-text">
               {t('council.wisdomCouncil')}
