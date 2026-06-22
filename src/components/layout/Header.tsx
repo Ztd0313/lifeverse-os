@@ -32,6 +32,7 @@ const NAV_LINKS = [
   { href: '/reunion-dialogue', labelKey: 'nav.reunionDialogue' },
   { href: '/agents', labelKey: 'nav.myAgent' },
   { href: '/history', labelKey: 'nav.history' },
+  { href: '/dream', labelKey: 'nav.dreamArchive' },
 ] as const;
 
 /**
