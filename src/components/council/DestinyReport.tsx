@@ -168,7 +168,7 @@ export default function DestinyReport({
           <Sparkles className="h-3.5 w-3.5" />
           <span>{t('council.destinyReport.badge')}</span>
         </div>
-        <h1 className="font-serif text-4xl text-text md:text-5xl">
+        <h1 className="font-serif text-3xl text-text sm:text-4xl md:text-5xl">
           <span className="text-gradient-gold">{t('council.destinyReport.title')}</span>
         </h1>
         <p className="mt-3 text-sm text-text-dim">
@@ -178,7 +178,7 @@ export default function DestinyReport({
 
       {/* ===== Question Block ===== */}
       <motion.div variants={itemVariants}>
-        <div className="relative overflow-hidden rounded border-l-2 border-gold bg-bg-card/60 p-6">
+        <div className="relative overflow-hidden rounded border-l-2 border-gold bg-bg-card/60 p-4 sm:p-6">
           <div className="absolute left-0 top-0 h-full w-px bg-gradient-to-b from-gold via-gold-dim to-transparent" />
           <p className="mb-1 text-xs uppercase tracking-wider text-text-dim">
             {t('council.destinyReport.topic')}
