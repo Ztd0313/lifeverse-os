@@ -14,7 +14,7 @@
  * CouncilContext 对象传递数据。
  */
 
-import { chatCompletion, isOpenAIConfigured, DEFAULT_MODEL } from './openai-client';
+import { chatCompletion, isOpenAIConfigured, DEFAULT_MODEL, getLanguageInstruction } from './openai-client';
 import { getAgentPrompt, isAgentId, type AgentId } from './agent-prompts';
 import { mockCouncilResult, type CouncilResult } from './mock-data';
 import { getAgentById } from '@/lib/agents';
@@ -50,6 +50,8 @@ export interface CouncilGraphInput {
       growth: number;
     };
   };
+  /** 用户界面语言，用于控制 AI 回复语言 */
+  locale?: string;
 }
 
 /** 议会内部上下文（节点间传递） */
@@ -66,6 +68,7 @@ interface CouncilContext {
   report: DestinyReport | null;
   timeline: TimelineBranch[] | null;
   overallConflictScore: number;
+  locale?: string;
 }
 
 /** 主席 System Prompt */
@@ -154,7 +157,7 @@ const REPORT_SYSTEM_PROMPT = `你是 LifeVerse 的命运报告撰写者，负责
   "disclaimer": "string"
 }
 
-语言：中文，兼具深度和可读性。心灵寄语要让人读完有"被看见"的感觉。`;
+兼具深度和可读性。心灵寄语要让人读完有"被看见"的感觉。`;
 
 /** 时间线 System Prompt */
 const TIMELINE_SYSTEM_PROMPT = `你是 LifeVerse 的时间线预言者，负责基于用户的决策和行动方案，生成人生分支预测。
@@ -227,6 +230,7 @@ export class CouncilGraph {
       report: null,
       timeline: null,
       overallConflictScore: 0,
+      locale: input.locale,
     };
 
     // 节点 1：主席调度
@@ -292,7 +296,7 @@ ${ctx.userContext?.age ? `用户年龄：${ctx.userContext.age}` : ''}
 
     try {
       const result = await chatCompletion({
-        systemPrompt: CHAIRMAN_SYSTEM_PROMPT,
+        systemPrompt: CHAIRMAN_SYSTEM_PROMPT + '\n\n' + getLanguageInstruction(ctx.locale),
         userMessage,
         temperature: 0.7,
         maxTokens: 400,
@@ -343,7 +347,7 @@ ${ctx.userContext?.age ? `用户年龄：${ctx.userContext.age}` : ''}
       const agent = getAgentById(agentId);
       if (!agent) return null;
 
-      const systemPrompt = getAgentPrompt(agentId);
+      const systemPrompt = getAgentPrompt(agentId) + '\n\n' + getLanguageInstruction(ctx.locale);
       const userMessage = `用户问题：${ctx.question}\n\n${roundContext}\n\n请以${agent.name}的身份发言（150-250字）。`;
 
       try {
@@ -411,7 +415,7 @@ ${ctx.userContext?.age ? `用户年龄：${ctx.userContext.age}` : ''}
 
     try {
       const result = await chatCompletion({
-        systemPrompt: CONFLICT_SYSTEM_PROMPT,
+        systemPrompt: CONFLICT_SYSTEM_PROMPT + '\n\n' + getLanguageInstruction(ctx.locale),
         userMessage,
         temperature: 0.3,
         maxTokens: 800,
@@ -467,7 +471,7 @@ ${ctx.userContext?.age ? `用户年龄：${ctx.userContext.age}` : ''}
     // 暂存共识结果，供报告节点使用
     try {
       const result = await chatCompletion({
-        systemPrompt: CONSENSUS_SYSTEM_PROMPT,
+        systemPrompt: CONSENSUS_SYSTEM_PROMPT + '\n\n' + getLanguageInstruction(ctx.locale),
         userMessage,
         temperature: 0.5,
         maxTokens: 800,
@@ -502,7 +506,7 @@ ${ctx.userContext?.age ? `用户年龄：${ctx.userContext.age}` : ''}
 
     try {
       const result = await chatCompletion({
-        systemPrompt: REPORT_SYSTEM_PROMPT,
+        systemPrompt: REPORT_SYSTEM_PROMPT + '\n\n' + getLanguageInstruction(ctx.locale),
         userMessage,
         temperature: 0.6,
         maxTokens: 1500,
@@ -576,7 +580,7 @@ ${ctx.userContext?.age ? `用户年龄：${ctx.userContext.age}` : ''}
 
     try {
       const result = await chatCompletion({
-        systemPrompt: TIMELINE_SYSTEM_PROMPT,
+        systemPrompt: TIMELINE_SYSTEM_PROMPT + '\n\n' + getLanguageInstruction(ctx.locale),
         userMessage,
         temperature: 0.6,
         maxTokens: 800,
