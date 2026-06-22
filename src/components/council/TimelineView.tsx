@@ -136,7 +136,7 @@ function BranchNode({ branch, depth, index }: BranchNodeProps) {
       {/* Connecting line (vertical) */}
       {depth > 0 && (
         <svg
-          className="absolute left-[19px] top-[-12px] h-[14px] w-[40px]"
+          className="absolute left-[14px] sm:left-[19px] top-[-12px] h-[14px] w-[40px]"
           viewBox="0 0 40 14"
           fill="none"
           preserveAspectRatio="none"
@@ -180,7 +180,7 @@ function BranchNode({ branch, depth, index }: BranchNodeProps) {
       {/* Node content */}
       <div
         className={cn(
-          'relative ml-10 rounded-lg border bg-bg-card p-4 card-hover',
+          'relative ml-6 sm:ml-10 rounded-lg border bg-bg-card p-4 card-hover',
           isRoot ? 'border-gold-dim glow-gold' : 'border-border'
         )}
         style={{
@@ -189,7 +189,7 @@ function BranchNode({ branch, depth, index }: BranchNodeProps) {
       >
         {/* Node dot */}
         <div
-          className="absolute left-[-30px] top-5 flex h-4 w-4 items-center justify-center"
+          className="absolute left-[-20px] sm:left-[-30px] top-5 flex h-4 w-4 items-center justify-center"
         >
           <motion.div
             className="h-3 w-3 rounded-full"
@@ -281,7 +281,7 @@ function BranchNode({ branch, depth, index }: BranchNodeProps) {
       <AnimatePresence initial={false}>
         {hasChildren && expanded && (
           <motion.div
-            className="mt-3 space-y-3 border-l border-dashed pl-6"
+            className="mt-3 space-y-3 border-l border-dashed pl-4 sm:pl-6"
             style={{ borderColor: `${nodeColor}30` }}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
