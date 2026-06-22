@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef, type KeyboardEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 
 /**
  * 问题输入组件 Props
@@ -23,18 +24,18 @@ interface QuestionInputProps {
 }
 
 /**
- * 默认占位文本
+ * 默认占位文本翻译 key
  */
-const DEFAULT_PLACEHOLDER = '向命运议会提出你的问题...（例如：我应该接受这份新工作吗？）';
+const DEFAULT_PLACEHOLDER_KEY = 'council.questionInput.placeholder';
 
 /**
- * 默认预设问题
+ * 默认预设问题翻译 keys
  */
-const DEFAULT_PRESETS: string[] = [
-  '我应该换工作吗？',
-  '如何平衡事业与家庭？',
-  '该不该开始创业？',
-  '我的人生方向对吗？',
+const DEFAULT_PRESET_KEYS: string[] = [
+  'council.questionInput.preset1',
+  'council.questionInput.preset2',
+  'council.questionInput.preset3',
+  'council.questionInput.preset4',
 ];
 
 /**
@@ -54,12 +55,15 @@ const DEFAULT_PRESETS: string[] = [
  */
 export function QuestionInput({
   onSubmit,
-  placeholder = DEFAULT_PLACEHOLDER,
-  presets = DEFAULT_PRESETS,
+  placeholder,
+  presets,
   maxLength = 500,
   disabled = false,
   className,
 }: QuestionInputProps) {
+  const { t } = useTranslation();
+  const resolvedPlaceholder = placeholder ?? t(DEFAULT_PLACEHOLDER_KEY);
+  const resolvedPresets = presets ?? DEFAULT_PRESET_KEYS.map((key) => t(key));
   const [value, setValue] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -125,9 +129,9 @@ export function QuestionInput({
       </AnimatePresence>
 
       {/* 预设问题标签 */}
-      {presets.length > 0 && (
+      {resolvedPresets.length > 0 && (
         <div className="flex flex-wrap gap-2 px-4 pt-4">
-          {presets.map((preset, idx) => (
+          {resolvedPresets.map((preset, idx) => (
             <motion.button
               key={preset}
               type="button"
@@ -159,7 +163,7 @@ export function QuestionInput({
           onKeyDown={handleKeyDown}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          placeholder={placeholder}
+          placeholder={resolvedPlaceholder}
           maxLength={maxLength}
           rows={4}
           disabled={disabled}
@@ -170,7 +174,7 @@ export function QuestionInput({
             'text-sm leading-relaxed',
             'min-h-[100px]'
           )}
-          aria-label="议会问题输入"
+          aria-label={t('council.questionInput.ariaLabel')}
         />
       </div>
 
@@ -203,7 +207,7 @@ export function QuestionInput({
           )}
           whileHover={canSubmit ? { scale: 1.03 } : {}}
           whileTap={canSubmit ? { scale: 0.97 } : {}}
-          aria-label="提交问题"
+          aria-label={t('council.questionInput.submitLabel')}
         >
           {/* 发光效果 */}
           {canSubmit && (
@@ -223,7 +227,7 @@ export function QuestionInput({
               }}
             />
           )}
-          <span className="relative">开启议会</span>
+          <span className="relative">{t('council.questionInput.submitButton')}</span>
           <svg
             className="relative h-4 w-4"
             viewBox="0 0 24 24"
