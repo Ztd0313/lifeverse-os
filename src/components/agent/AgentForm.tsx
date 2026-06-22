@@ -2,11 +2,22 @@
 
 import * as React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Save, Sparkles, Check } from 'lucide-react';
+import {
+  X,
+  Save,
+  Sparkles,
+  Check,
+  Upload,
+  Loader2,
+  Image as ImageIcon,
+  AlertCircle,
+  Wand2,
+} from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/lib/utils';
 import { fadeInUp, scaleIn } from '@/lib/motion/variants';
+import { useTranslation } from '@/lib/i18n';
 import {
   DIALOGUE_STYLE_LABELS,
   type DialogueStyle,
@@ -73,6 +84,24 @@ const DIALOGUE_STYLE_OPTIONS: {
 ];
 
 // ===== 表单数据与校验 =====
+
+/**
+ * AI 分析返回的英文专业领域到表单中文值的映射
+ *
+ * /api/analyze-chat 返回的 expertise 为英文枚举值，
+ * 需要映射回表单使用的中文值。
+ */
+const EXPERTISE_EN_TO_CN: Record<string, string> = {
+  business: '商业',
+  tech: '科技',
+  psychology: '心理',
+  philosophy: '哲学',
+  literature: '文学',
+  art: '艺术',
+  career: '职业',
+  life: '生活',
+  other: '其他',
+};
 
 /**
  * 表单数据结构
@@ -251,10 +280,29 @@ export function AgentForm({
 }: AgentFormProps) {
   const isEditMode = !!initialAgent;
 
+  // i18n - 获取当前语言，传递给 AI 分析接口
+  const { locale } = useTranslation();
+
   // 表单数据
   const [formData, setFormData] = React.useState<AgentFormData>(INITIAL_FORM_DATA);
   const [errors, setErrors] = React.useState<ValidationErrors>({});
   const [submitting, setSubmitting] = React.useState(false);
+
+  // ===== 聊天记录分析相关 state =====
+  /** 已上传的聊天截图 URL */
+  const [chatImageUrl, setChatImageUrl] = React.useState('');
+  /** 图片上传中 */
+  const [isUploading, setIsUploading] = React.useState(false);
+  /** AI 分析中 */
+  const [isAnalyzing, setIsAnalyzing] = React.useState(false);
+  /** 分析结果摘要（成功/失败提示） */
+  const [analysisResult, setAnalysisResult] = React.useState<string | null>(
+    null
+  );
+  /** 分析是否出错 */
+  const [analysisError, setAnalysisError] = React.useState(false);
+  /** 隐藏的文件输入 ref */
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   // 编辑模式时，用 initialAgent 填充表单
   React.useEffect(() => {
@@ -271,6 +319,12 @@ export function AgentForm({
       // 创建模式重置
       setFormData(INITIAL_FORM_DATA);
     }
+    // 重置聊天记录分析状态
+    setChatImageUrl('');
+    setIsUploading(false);
+    setIsAnalyzing(false);
+    setAnalysisResult(null);
+    setAnalysisError(false);
     setErrors({});
   }, [open, initialAgent]);
 
@@ -305,6 +359,117 @@ export function AgentForm({
     // 清除该字段的错误
     if (errors[field as keyof ValidationErrors]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+  };
+
+  /** 处理聊天截图上传 */
+  const handleChatImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // 简单校验图片类型
+    if (!file.type.startsWith('image/')) {
+      setAnalysisResult('请上传图片文件');
+      setAnalysisError(true);
+      return;
+    }
+
+    setIsUploading(true);
+    setAnalysisResult(null);
+    setAnalysisError(false);
+
+    try {
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: uploadFormData,
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || '上传失败');
+      }
+
+      setChatImageUrl(data.url);
+      setAnalysisResult('截图上传成功，点击"AI分析"提取人物特征');
+      setAnalysisError(false);
+    } catch (err) {
+      setAnalysisResult(
+        err instanceof Error ? `上传失败：${err.message}` : '图片上传失败，请重试'
+      );
+      setAnalysisError(true);
+    } finally {
+      setIsUploading(false);
+      // 重置 input 以便重复选择同一文件
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  /** 调用 AI 分析聊天截图，自动填充表单 */
+  const handleAnalyzeChat = async () => {
+    if (!chatImageUrl) {
+      setAnalysisResult('请先上传聊天记录截图');
+      setAnalysisError(true);
+      return;
+    }
+
+    setIsAnalyzing(true);
+    setAnalysisResult(null);
+    setAnalysisError(false);
+
+    try {
+      const res = await fetch('/api/analyze-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageUrl: chatImageUrl,
+          locale,
+        }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || '分析失败');
+      }
+
+      const analysis = data.analysis;
+
+      // 自动填充表单字段（用户仍可修改）
+      setFormData((prev) => ({
+        ...prev,
+        personality: analysis.personality || prev.personality,
+        coreBelief: analysis.coreBelief || prev.coreBelief,
+        dialogueStyle:
+          (analysis.dialogueStyle as DialogueStyle) || prev.dialogueStyle,
+        expertise:
+          EXPERTISE_EN_TO_CN[analysis.expertise] || prev.expertise,
+        name: analysis.suggestedName || prev.name,
+      }));
+
+      // 清除已填充字段的校验错误
+      setErrors({});
+
+      setAnalysisResult(
+        analysis.analysisSummary
+          ? `分析完成：${analysis.analysisSummary}`
+          : '分析完成，已自动填充表单，你可以继续修改'
+      );
+      setAnalysisError(false);
+    } catch (err) {
+      setAnalysisResult(
+        err instanceof Error
+          ? `分析失败：${err.message}，你可以手动填写`
+          : 'AI分析失败，请手动填写'
+      );
+      setAnalysisError(true);
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
@@ -534,6 +699,120 @@ export function AgentForm({
                         );
                       })}
                     </div>
+                  </div>
+
+                  {/* ===== 聊天记录分析（AI 辅助填充）===== */}
+                  <div className="rounded-lg border border-gold-dim/40 bg-gold-soft/10 p-4">
+                    <div className="mb-2 flex items-center gap-2">
+                      <Wand2 className="h-4 w-4 text-gold" />
+                      <span className="text-sm font-medium text-text">
+                        聊天记录分析
+                      </span>
+                      <span className="text-xs text-text-dim">
+                        （上传对话截图，AI 自动提取人物特征）
+                      </span>
+                    </div>
+
+                    {/* 隐藏的文件输入 */}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleChatImageUpload}
+                      className="hidden"
+                    />
+
+                    {/* 上传区域 / 图片预览 */}
+                    {!chatImageUrl ? (
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploading || isAnalyzing}
+                        className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-bg-card/50 px-4 py-6 text-text-dim transition-colors hover:border-gold-dim hover:text-text-soft disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {isUploading ? (
+                          <>
+                            <Loader2 className="h-6 w-6 animate-spin text-gold" />
+                            <span className="text-xs">上传中...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="h-6 w-6" />
+                            <span className="text-xs">
+                              点击上传聊天记录截图
+                            </span>
+                            <span className="text-[10px] text-text-dim">
+                              支持 JPG / PNG / WebP
+                            </span>
+                          </>
+                        )}
+                      </button>
+                    ) : (
+                      <div className="space-y-3">
+                        {/* 图片预览 */}
+                        <div className="relative overflow-hidden rounded-lg border border-border bg-bg-card">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={chatImageUrl}
+                            alt="聊天记录截图"
+                            className="max-h-48 w-full object-contain"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setChatImageUrl('');
+                              setAnalysisResult(null);
+                              setAnalysisError(false);
+                            }}
+                            disabled={isAnalyzing}
+                            className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80 disabled:opacity-50"
+                            aria-label="移除图片"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+
+                        {/* AI 分析按钮 */}
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={handleAnalyzeChat}
+                          disabled={isAnalyzing}
+                          className="w-full"
+                        >
+                          {isAnalyzing ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              AI 分析中...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="h-4 w-4" />
+                              AI 分析人物特征
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    )}
+
+                    {/* 分析结果提示 */}
+                    {analysisResult && (
+                      <div
+                        className={cn(
+                          'mt-2 flex items-start gap-1.5 rounded-md px-2 py-1.5 text-xs',
+                          analysisError
+                            ? 'bg-red/10 text-red'
+                            : 'bg-gold-soft/20 text-gold'
+                        )}
+                      >
+                        {analysisError ? (
+                          <AlertCircle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
+                        ) : (
+                          <Check className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
+                        )}
+                        <span className="leading-relaxed">{analysisResult}</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* 性格描述 */}
