@@ -17,6 +17,7 @@ import type {
 } from '@/types';
 import { cn, getConflictLevel, formatSessionNumber } from '@/lib/utils';
 import { useCouncilStore } from '@/stores/council-store';
+import { useTranslation } from '@/lib/i18n';
 import { AgentCard } from './AgentCard';
 import { TypingText } from './TypingText';
 import { RoundIndicator } from './RoundIndicator';
@@ -43,18 +44,18 @@ interface MeetingRoomProps {
 }
 
 /**
- * 阶段显示文本映射
+ * 阶段对应的翻译 key 映射
  */
-const PHASE_LABELS: Partial<Record<CouncilPhase, string>> = {
-  ritual: '议会开始...',
-  r1: '第一轮 · 表态',
-  r2: '第二轮 · 质疑',
-  r3: '第三轮 · 共识',
-  report: '生成命运报告中...',
-  idle: '等待议题',
-  matching: '匹配议会成员...',
-  timeline: '生成时间线...',
-  done: '议会结束',
+const PHASE_TRANSLATION_KEYS: Partial<Record<CouncilPhase, string>> = {
+  ritual: 'council.meetingRoom.phaseRitual',
+  r1: 'council.meetingRoom.phaseR1',
+  r2: 'council.meetingRoom.phaseR2',
+  r3: 'council.meetingRoom.phaseR3',
+  report: 'council.meetingRoom.phaseReport',
+  idle: 'council.meetingRoom.phaseIdle',
+  matching: 'council.meetingRoom.phaseMatching',
+  timeline: 'council.meetingRoom.phaseTimeline',
+  done: 'council.meetingRoom.phaseDone',
 };
 
 /**
@@ -104,6 +105,7 @@ function getConflictColor(value: number): string {
  * 仪式动画组件
  */
 function RitualAnimation() {
+  const { t } = useTranslation();
   return (
     <motion.div
       className="absolute inset-0 flex items-center justify-center pointer-events-none"
@@ -140,10 +142,10 @@ function RitualAnimation() {
           animate={{ opacity: [0.6, 1, 0.6] }}
           transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
         >
-          议会开始
+          {t('council.meetingRoom.ritualTitle')}
         </motion.div>
         <div className="mt-2 text-xs text-text-dim tracking-widest">
-          COUNCIL BEGINS
+          {t('council.meetingRoom.ritualSubtitle')}
         </div>
       </motion.div>
     </motion.div>
@@ -166,6 +168,7 @@ function MessageItem({
   isLatest,
   isCurrentlySpeaking,
 }: MessageItemProps) {
+  const { t } = useTranslation();
   const isSystem = message.role === 'system';
   const isUser = message.role === 'user';
   const isConflict = message.isConflict;
@@ -237,7 +240,7 @@ function MessageItem({
             {message.personaName}
           </span>
           {isConflict && (
-            <span className="text-[10px] text-red">⚠ 冲突</span>
+            <span className="text-[10px] text-red">{t('council.meetingRoom.conflictTag')}</span>
           )}
           <span className="text-[10px] text-text-dim">
             R{message.round}
@@ -299,6 +302,7 @@ export function MeetingRoom({
   onAgentClick,
   className,
 }: MeetingRoomProps) {
+  const { t } = useTranslation();
   // 从 store 获取 sessionNumber 和 question（props 中未包含）
   const sessionNumber = useCouncilStore((s) => s.sessionNumber);
   const storeQuestion = useCouncilStore((s) => s.question);
@@ -421,7 +425,7 @@ export function MeetingRoom({
             </motion.h2>
             <span className="text-text-dim text-xs">|</span>
             <span className="text-xs text-text-soft">
-              {PHASE_LABELS[phase] ?? phase}
+              {t(PHASE_TRANSLATION_KEYS[phase] ?? '')}
             </span>
           </div>
 
@@ -439,7 +443,7 @@ export function MeetingRoom({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.1 }}
           >
-            <span className="text-gold text-xs font-medium mt-0.5">议题</span>
+            <span className="text-gold text-xs font-medium mt-0.5">{t('council.meetingRoom.topicLabel')}</span>
             <p className="text-sm text-text-soft leading-relaxed flex-1">
               {question}
             </p>
@@ -556,7 +560,7 @@ export function MeetingRoom({
                     {currentRound > 0 ? `ROUND ${currentRound}` : 'COUNCIL'}
                   </div>
                   <div className="text-xs text-gold font-medium mt-1">
-                    {currentRound > 0 ? `第${currentRound}轮` : '议会'}
+                    {currentRound > 0 ? t('council.meetingRoom.roundLabel', { round: currentRound }) : t('council.meetingRoom.councilLabel')}
                   </div>
                 </>
               )}
@@ -622,9 +626,9 @@ export function MeetingRoom({
       {/* ===== 底部：对话流 ===== */}
       <div className="flex-1 min-h-0 flex flex-col px-6 pb-4">
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-xs text-text-soft font-medium">对话流</span>
+          <span className="text-xs text-text-soft font-medium">{t('council.meetingRoom.dialogFlow')}</span>
           <span className="text-[10px] text-text-dim">
-            {messages.length} 条消息
+            {t('council.meetingRoom.messageCount', { count: messages.length })}
           </span>
         </div>
 
@@ -636,8 +640,8 @@ export function MeetingRoom({
             <div className="flex items-center justify-center h-full">
               <span className="text-xs text-text-dim">
                 {phase === 'idle'
-                  ? '提交议题后开启议会...'
-                  : '等待 Agent 发言...'}
+                  ? t('council.meetingRoom.submitTopicHint')
+                  : t('council.meetingRoom.waitingAgent')}
               </span>
             </div>
           ) : (
