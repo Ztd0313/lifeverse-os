@@ -15,64 +15,65 @@ import {
 } from 'lucide-react';
 import type { DestinyReport, ReportIndices } from '@/types';
 import { cn, formatDate } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 
 // ===== Index Configuration =====
 
 interface IndexConfig {
   key: keyof ReportIndices;
-  label: string;
+  labelKey: string;
+  descKey: string;
   color: string;
   bgColor: string;
-  description: string;
 }
 
 const INDEX_CONFIG: IndexConfig[] = [
   {
     key: 'conflict',
-    label: '冲突值',
+    labelKey: 'council.destinyReport.indexConflict',
+    descKey: 'council.destinyReport.indexConflictDesc',
     color: '#e85d5d',
     bgColor: 'rgba(232, 93, 93, 0.12)',
-    description: '议会内部的分歧程度',
   },
   {
     key: 'growth',
-    label: '成长值',
+    labelKey: 'council.destinyReport.indexGrowth',
+    descKey: 'council.destinyReport.indexGrowthDesc',
     color: '#5de8a0',
     bgColor: 'rgba(93, 232, 160, 0.12)',
-    description: '个人成长潜力',
   },
   {
     key: 'happiness',
-    label: '幸福值',
+    labelKey: 'council.destinyReport.indexHappiness',
+    descKey: 'council.destinyReport.indexHappinessDesc',
     color: '#c9a84c',
     bgColor: 'rgba(201, 168, 76, 0.12)',
-    description: '预期幸福水平',
   },
   {
     key: 'freedom',
-    label: '自由值',
+    labelKey: 'council.destinyReport.indexFreedom',
+    descKey: 'council.destinyReport.indexFreedomDesc',
     color: '#5da0e8',
     bgColor: 'rgba(93, 160, 232, 0.12)',
-    description: '选择自由度',
   },
   {
     key: 'stability',
-    label: '稳定值',
+    labelKey: 'council.destinyReport.indexStability',
+    descKey: 'council.destinyReport.indexStabilityDesc',
     color: '#e8a05d',
     bgColor: 'rgba(232, 160, 93, 0.12)',
-    description: '生活稳定性',
   },
 ];
 
 // ===== Dimension Icon Mapping =====
 
 const DIMENSION_ICONS: Record<string, typeof AlertTriangle> = {
-  风险分析: AlertTriangle,
-  后悔概率: RotateCcw,
-  长期收益: TrendingUp,
-  幸福指数: Heart,
-  建议行动: Lightbulb,
-  各方共识: Handshake,
+  riskAnalysis: AlertTriangle,
+  regretProb: RotateCcw,
+  longTermReturn: TrendingUp,
+  happinessIndex: Heart,
+  suggestedAction: Lightbulb,
+  consensus: Handshake,
 };
 
 // ===== CountUp Component =====
@@ -153,6 +154,7 @@ export default function DestinyReport({
   onSave,
   onNewCouncil,
 }: DestinyReportProps) {
+  const { t } = useTranslation();
   return (
     <motion.div
       variants={containerVariants}
@@ -164,13 +166,13 @@ export default function DestinyReport({
       <motion.div variants={itemVariants} className="text-center">
         <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-gold-dim bg-gold-soft px-4 py-1.5 text-xs font-medium text-gold">
           <Sparkles className="h-3.5 w-3.5" />
-          <span>命运报告</span>
+          <span>{t('council.destinyReport.badge')}</span>
         </div>
         <h1 className="font-serif text-4xl text-text md:text-5xl">
-          <span className="text-gradient-gold">人生命运报告</span>
+          <span className="text-gradient-gold">{t('council.destinyReport.title')}</span>
         </h1>
         <p className="mt-3 text-sm text-text-dim">
-          生成于 {formatDate(report.timestamp)}
+          {t('council.destinyReport.generatedAt', { date: formatDate(report.timestamp) })}
         </p>
       </motion.div>
 
@@ -179,7 +181,7 @@ export default function DestinyReport({
         <div className="relative overflow-hidden rounded border-l-2 border-gold bg-bg-card/60 p-6">
           <div className="absolute left-0 top-0 h-full w-px bg-gradient-to-b from-gold via-gold-dim to-transparent" />
           <p className="mb-1 text-xs uppercase tracking-wider text-text-dim">
-            议题
+            {t('council.destinyReport.topic')}
           </p>
           <blockquote className="font-serif text-xl text-text md:text-2xl">
             &ldquo;{report.question}&rdquo;
@@ -199,7 +201,7 @@ export default function DestinyReport({
       {/* ===== 5 Index Cards ===== */}
       <motion.div variants={itemVariants}>
         <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-text-dim">
-          核心指数
+          {t('council.destinyReport.coreIndices')}
         </h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {INDEX_CONFIG.map((config) => {
@@ -218,7 +220,7 @@ export default function DestinyReport({
                 <div className="relative">
                   <div className="mb-2 flex items-center justify-between">
                     <span className="text-xs text-text-soft">
-                      {config.label}
+                      {t(config.labelKey)}
                     </span>
                     <span
                       className="h-2 w-2 rounded-full"
@@ -248,7 +250,7 @@ export default function DestinyReport({
                     />
                   </div>
                   <p className="mt-2 text-[10px] text-text-dim">
-                    {config.description}
+                    {t(config.descKey)}
                   </p>
                 </div>
               </motion.div>
@@ -261,7 +263,7 @@ export default function DestinyReport({
       {report.dimensions.length > 0 && (
         <motion.div variants={itemVariants}>
           <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-text-dim">
-            维度分析
+            {t('council.destinyReport.dimensionAnalysis')}
           </h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {report.dimensions.map((dim, index) => {
@@ -301,7 +303,7 @@ export default function DestinyReport({
       {report.consensusPoints.length > 0 && (
         <motion.div variants={itemVariants}>
           <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-text-dim">
-            各方共识
+            {t('council.destinyReport.consensusPoints')}
           </h2>
           <div className="space-y-2">
             {report.consensusPoints.map((point, index) => (
@@ -329,8 +331,7 @@ export default function DestinyReport({
       >
         <div className="absolute inset-0 bg-gradient-to-br from-gold-soft/20 via-transparent to-transparent" />
         <p className="relative text-base font-medium text-gold md:text-lg">
-          {report.disclaimer ||
-            '最终决定权，属于你。议会只提供视角，不替你做选择。'}
+          {report.disclaimer || t('council.destinyReport.disclaimer')}
         </p>
       </motion.div>
 
@@ -345,7 +346,7 @@ export default function DestinyReport({
             className="inline-flex items-center gap-2 rounded-lg border border-border bg-bg-card px-5 py-2.5 text-sm font-medium text-text-soft transition-colors hover:border-gold-dim hover:text-gold card-hover"
           >
             <Share2 className="h-4 w-4" />
-            分享
+            {t('council.destinyReport.share')}
           </button>
         )}
         {onSave && (
@@ -354,7 +355,7 @@ export default function DestinyReport({
             className="inline-flex items-center gap-2 rounded-lg border border-border bg-bg-card px-5 py-2.5 text-sm font-medium text-text-soft transition-colors hover:border-gold-dim hover:text-gold card-hover"
           >
             <Save className="h-4 w-4" />
-            保存
+            {t('council.destinyReport.save')}
           </button>
         )}
         {onNewCouncil && (
@@ -363,7 +364,7 @@ export default function DestinyReport({
             className="inline-flex items-center gap-2 rounded-lg bg-gold px-6 py-2.5 text-sm font-semibold text-bg transition-colors hover:bg-gold-dim glow-gold"
           >
             <Sparkles className="h-4 w-4" />
-            新建议会
+            {t('council.destinyReport.newCouncil')}
           </button>
         )}
       </motion.div>
