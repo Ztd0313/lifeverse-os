@@ -16,7 +16,8 @@ import {
 } from 'lucide-react';
 import { FUTURE_COUNCIL_AGENTS } from '@/lib/agents';
 import { cn } from '@/lib/utils';
-import type { Persona, RadarData } from '@/types';
+import type { Persona, RadarData, DestinyReport, TimelineBranch } from '@/types';
+import type { CouncilResult } from '@/lib/ai/mock-data';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { AgentCard } from '@/components/council/AgentCard';
@@ -29,6 +30,8 @@ import { useTranslation } from '@/lib/i18n';
 import {
   TimelineExplorer,
   type TimelineBranchData,
+  type TimelineSnapshot,
+  type TimelineHorizon,
 } from '@/components/council/TimelineExplorer';
 import {
   RegretAnalysis,
@@ -222,6 +225,72 @@ const MOCK_RADAR: RadarData = {
   growth: 88,
 };
 
+// ===== Timeline 数据转换 =====
+
+/**
+ * 将 API 返回的 TimelineBranch[]（时间节点序列）转换为
+ * TimelineExplorer 所需的 TimelineBranchData[]（策略分支结构）。
+ *
+ * API 的 timeline 是一条按时间排列的节点序列（now/3m/1y/5y/10y/20y，可带 children），
+ * 而 TimelineExplorer 期望的是若干条"策略分支"，每条分支包含 1y/5y/10y 三个快照。
+ *
+ * 这里采用尽力转换策略：从 API timeline 中递归收集节点，提取 1y/5y/10y 三个节点
+ * 组成一条"平衡"分支。若无法提取出完整的 3 个节点，返回 null，由调用方降级到 Mock。
+ *
+ * @param branches API 返回的时间线节点
+ * @returns 转换后的分支数据；格式不匹配时返回 null
+ */
+function transformTimeline(branches: TimelineBranch[]): TimelineBranchData[] | null {
+  try {
+    if (!Array.isArray(branches) || branches.length === 0) return null;
+
+    // 递归收集所有节点，按 node 字段建索引
+    const horizonMap: Partial<Record<string, TimelineBranch>> = {};
+    const collect = (nodes: TimelineBranch[]) => {
+      for (const n of nodes) {
+        if (n && typeof n.node === 'string') {
+          horizonMap[n.node] = n;
+        }
+        if (n.children && n.children.length > 0) {
+          collect(n.children);
+        }
+      }
+    };
+    collect(branches);
+
+    // 提取 1y / 5y / 10y 三个节点
+    const targetHorizons: TimelineHorizon[] = ['1y', '5y', '10y'];
+    const snapshots: TimelineSnapshot[] = [];
+    for (const h of targetHorizons) {
+      const node = horizonMap[h];
+      if (!node) continue;
+      snapshots.push({
+        horizon: h,
+        label: node.label || '',
+        description: node.description || '',
+        happinessProb: typeof node.happinessProb === 'number' ? node.happinessProb : 0,
+        regretProb: typeof node.regretProb === 'number' ? node.regretProb : 0,
+        incomeChange: node.incomeChange || '0%',
+      });
+    }
+
+    // 必须凑齐 3 个快照，否则视为格式不匹配
+    if (snapshots.length < 3) return null;
+
+    return [
+      {
+        strategy: 'balanced',
+        title: 'AI 推演时间线',
+        subtitle: '基于议会讨论生成的时间线预测',
+        color: '#c9a84c',
+        snapshots: snapshots as [TimelineSnapshot, TimelineSnapshot, TimelineSnapshot],
+      },
+    ];
+  } catch {
+    return null;
+  }
+}
+
 // ===== 阶段定义 =====
 
 type FuturePhase = 'idle' | 'timeline' | 'speaking' | 'regret' | 'report';
@@ -345,9 +414,10 @@ interface SpeakingPhaseProps {
   question: string;
   onComplete: () => void;
   t: (key: string, vars?: Record<string, string | number>) => string;
+  voices?: TimeVoice[];
 }
 
-function SpeakingPhase({ question, onComplete, t }: SpeakingPhaseProps) {
+function SpeakingPhase({ question, onComplete, t, voices }: SpeakingPhaseProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
 
@@ -365,7 +435,7 @@ function SpeakingPhase({ question, onComplete, t }: SpeakingPhaseProps) {
   }, [onComplete]);
 
   const currentAgent = TIME_AGENTS[currentIndex];
-  const currentVoice = MOCK_VOICES.find((v) => v.personaId === currentAgent.id);
+  const currentVoice = (voices || MOCK_VOICES).find((v) => v.personaId === currentAgent.id);
 
   return (
     <motion.div
@@ -460,9 +530,16 @@ interface FutureReportProps {
   onRestart: () => void;
   onViewTimeline: () => void;
   t: (key: string, vars?: Record<string, string | number>) => string;
+  radar?: RadarData;
+  report?: DestinyReport;
+  isMock?: boolean;
 }
 
-function FutureReport({ question, onRestart, onViewTimeline, t }: FutureReportProps) {
+function FutureReport({ question, onRestart, onViewTimeline, t, radar, report, isMock }: FutureReportProps) {
+  const displayRadar = radar || MOCK_RADAR;
+  const consensusText = report?.summary
+    || t('future.consensusText', { accept: t('future.acceptLabel'), reject: t('future.rejectLabel'), balanced: t('future.balancedLabel') });
+
   return (
     <motion.div
       variants={pageVariants}
@@ -480,6 +557,11 @@ function FutureReport({ question, onRestart, onViewTimeline, t }: FutureReportPr
         <h1 className="font-serif text-3xl text-text md:text-4xl">
           <span className="text-gradient-gold">{t('future.reportTitle')}</span>
         </h1>
+        {isMock && (
+          <p className="mt-2 inline-block rounded-full border border-border bg-bg-card px-3 py-1 text-[10px] text-text-dim">
+            {t('future.mockBadge')}
+          </p>
+        )}
       </div>
 
       {/* 议题 */}
@@ -498,7 +580,7 @@ function FutureReport({ question, onRestart, onViewTimeline, t }: FutureReportPr
           {t('future.consensus')}
         </h2>
         <p className="text-sm leading-relaxed text-text-soft">
-          {t('future.consensusText', { accept: t('future.acceptLabel'), reject: t('future.rejectLabel'), balanced: t('future.balancedLabel') })}
+          {consensusText}
         </p>
       </Card>
 
@@ -562,7 +644,7 @@ function FutureReport({ question, onRestart, onViewTimeline, t }: FutureReportPr
             {t('future.radarTitle')}
           </h3>
           <RadarChart
-            data={MOCK_RADAR}
+            data={displayRadar}
             size={200}
             showLabels={true}
             showGrid={true}
@@ -635,6 +717,8 @@ export default function FutureCouncilPage() {
   const { isAuthenticated, isInitialized, checkAuth } = useAuthStore();
   const [phase, setPhase] = useState<FuturePhase>('idle');
   const [question, setQuestion] = useState('');
+  const [councilResult, setCouncilResult] = useState<CouncilResult | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   /** 首次加载时校验登录态 */
   useEffect(() => {
@@ -648,8 +732,28 @@ export default function FutureCouncilPage() {
     }
   }, [isInitialized, isAuthenticated, router, pathname]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!question.trim()) return;
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/council', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question,
+          councilType: 'future',
+          rounds: 2,
+        }),
+      });
+      if (!response.ok) throw new Error('API failed');
+      const result = (await response.json()) as CouncilResult;
+      setCouncilResult(result);
+    } catch (error) {
+      console.error('Future council API error:', error);
+      // 降级：不设置 councilResult，后续阶段使用 Mock 数据
+      setCouncilResult(null);
+    }
+    setIsLoading(false);
     setPhase('timeline');
   };
 
@@ -667,6 +771,8 @@ export default function FutureCouncilPage() {
 
   const handleRestart = () => {
     setQuestion('');
+    setCouncilResult(null);
+    setIsLoading(false);
     setPhase('idle');
   };
 
@@ -716,7 +822,7 @@ export default function FutureCouncilPage() {
       <main className="relative z-10 px-4 py-8">
         <AnimatePresence mode="wait">
           {/* 输入阶段 */}
-          {phase === 'idle' && (
+          {phase === 'idle' && !isLoading && (
             <InputPhase
               key="input"
               question={question}
@@ -724,6 +830,23 @@ export default function FutureCouncilPage() {
               onSubmit={handleSubmit}
               t={t}
             />
+          )}
+
+          {/* 加载阶段（调用 API 期间） */}
+          {phase === 'idle' && isLoading && (
+            <motion.div
+              key="loading"
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="mx-auto flex w-full max-w-2xl flex-col items-center justify-center py-20"
+            >
+              <Loader2 className="h-10 w-10 animate-spin text-gold" />
+              <p className="mt-4 text-sm text-text-soft">
+                {t('future.loading')}
+              </p>
+            </motion.div>
           )}
 
           {/* 时间线推演阶段 */}
@@ -739,12 +862,18 @@ export default function FutureCouncilPage() {
               <div className="text-center">
                 <h2 className="font-serif text-2xl text-text md:text-3xl">
                   <span className="text-gradient-gold">{t('future.timelineTitle')}</span>
-                  </h2>
-                  <p className="mt-2 text-sm text-text-soft">
-                    {t('future.timelineSubtitle')}
+                </h2>
+                <p className="mt-2 text-sm text-text-soft">
+                  {t('future.timelineSubtitle')}
                 </p>
               </div>
-              <TimelineExplorer branches={MOCK_TIMELINE_BRANCHES} />
+              <TimelineExplorer
+                branches={
+                  councilResult?.timeline && councilResult.timeline.length > 0
+                    ? transformTimeline(councilResult.timeline) ?? MOCK_TIMELINE_BRANCHES
+                    : MOCK_TIMELINE_BRANCHES
+                }
+              />
               <div className="flex justify-center">
                 <Button variant="gold" onClick={handleTimelineDone}>
                   {t('future.summonVoices')}
@@ -761,6 +890,13 @@ export default function FutureCouncilPage() {
               question={question}
               onComplete={handleSpeakingComplete}
               t={t}
+              voices={
+                councilResult?.messages?.length
+                  ? councilResult.messages
+                      .filter((m) => m.role === 'agent')
+                      .map((m) => ({ personaId: m.personaId, content: m.content }))
+                  : undefined
+              }
             />
           )}
 
@@ -775,7 +911,9 @@ export default function FutureCouncilPage() {
               className="mx-auto w-full max-w-3xl space-y-6"
             >
               <RegretAnalysis
-                reflection={MOCK_REFLECTION}
+                reflection={
+                  councilResult?.report?.dimensions?.[5]?.content || MOCK_REFLECTION
+                }
                 options={MOCK_REGRET_OPTIONS}
               />
               <div className="flex justify-center">
@@ -795,6 +933,9 @@ export default function FutureCouncilPage() {
               onRestart={handleRestart}
               onViewTimeline={handleViewTimeline}
               t={t}
+              radar={councilResult?.report?.radar}
+              report={councilResult?.report}
+              isMock={councilResult?.isMock}
             />
           )}
         </AnimatePresence>
