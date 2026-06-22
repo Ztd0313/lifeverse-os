@@ -1,9 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowLeft, HeartHandshake, MessageSquareHeart } from 'lucide-react';
+import { HeartHandshake, MessageSquareHeart } from 'lucide-react';
 import { ParticleBackground } from '@/components/effects/ParticleBackground';
 import { Header } from '@/components/layout/Header';
 import { Card } from '@/components/ui/Card';
@@ -150,16 +149,6 @@ export default function ReunionPage() {
                 onStart={handleStartReunion}
               />
             ))}
-          </motion.div>
-
-          {/* ===== 返回首页按钮 ===== */}
-          <motion.div variants={fadeInUp}>
-            <Button asChild variant="secondary" size="lg">
-              <Link href="/">
-                <ArrowLeft className="h-4 w-4" />
-                返回首页
-              </Link>
-            </Button>
           </motion.div>
 
           {/* ===== 提示 toast ===== */}
