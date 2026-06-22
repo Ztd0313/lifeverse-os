@@ -1,6 +1,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { Logo } from '@/components/brand/Logo';
+import { APP_VERSION } from '@/lib/version';
 
 /**
  * Footer 导航链接分组
@@ -93,6 +94,9 @@ export function Footer() {
         <div className="mt-10 border-t border-border pt-6 text-center">
           <p className="text-xs text-text-dim">
             © {currentYear} LifeVerse. All rights reserved.
+          </p>
+          <p className="mt-1 text-xs text-text-dim/60">
+            {APP_VERSION} · 生命宇宙操作系统
           </p>
         </div>
       </div>
