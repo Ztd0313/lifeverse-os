@@ -25,6 +25,7 @@ import { RadarChart } from '@/components/charts/RadarChart';
 import { ParticleBackground } from '@/components/effects/ParticleBackground';
 import { Header } from '@/components/layout/Header';
 import { useAuthStore } from '@/stores/auth-store';
+import { useTranslation } from '@/lib/i18n';
 import {
   TimelineExplorer,
   type TimelineBranchData,
@@ -239,9 +240,10 @@ interface InputPhaseProps {
   question: string;
   setQuestion: (q: string) => void;
   onSubmit: () => void;
+  t: (key: string, vars?: Record<string, string | number>) => string;
 }
 
-function InputPhase({ question, setQuestion, onSubmit }: InputPhaseProps) {
+function InputPhase({ question, setQuestion, onSubmit, t }: InputPhaseProps) {
   return (
     <motion.div
       variants={pageVariants}
@@ -260,10 +262,10 @@ function InputPhase({ question, setQuestion, onSubmit }: InputPhaseProps) {
           <Clock className="h-8 w-8 text-gold" />
         </motion.div>
         <h1 className="font-serif text-3xl text-text md:text-4xl">
-          <span className="text-gradient-gold">召唤未来的自己</span>
+          <span className="text-gradient-gold">{t('future.title')}</span>
         </h1>
         <p className="mt-2 text-sm text-text-soft">
-          20 岁、当前、50 岁、80 岁的你将共同审视这个决定
+          {t('future.subtitle')}
         </p>
       </div>
 
@@ -272,7 +274,7 @@ function InputPhase({ question, setQuestion, onSubmit }: InputPhaseProps) {
         <textarea
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
-          placeholder="输入一个影响深远的决定（如：是否接受海外工作）..."
+          placeholder={t('future.placeholder')}
           rows={3}
           className="w-full resize-none rounded-lg border border-border bg-bg-card p-4 text-base text-text placeholder:text-text-dim focus:border-gold-dim focus:outline-none"
           onKeyDown={(e) => {
@@ -292,29 +294,32 @@ function InputPhase({ question, setQuestion, onSubmit }: InputPhaseProps) {
           )}
         >
           <Send className="h-4 w-4" />
-          推演未来
+          {t('future.submit')}
         </button>
       </div>
 
       {/* 预设问题 */}
       <div>
-        <p className="mb-3 text-xs text-text-dim">或者试试这些决定:</p>
+        <p className="mb-3 text-xs text-text-dim">{t('future.presetLabel')}</p>
         <div className="flex flex-wrap gap-2">
-          {PRESET_QUESTIONS.map((preset, index) => (
+          {PRESET_QUESTIONS.map((preset, index) => {
+            const translatedPreset = (t(`future.presetQuestions.${index}` as const) || preset) as string;
+            return (
             <button
               key={index}
-              onClick={() => setQuestion(preset)}
+              onClick={() => setQuestion(translatedPreset)}
               className="rounded-full border border-border bg-bg-card px-3 py-1.5 text-xs text-text-soft transition-colors hover:border-gold-dim hover:text-gold card-hover"
             >
-              {preset}
+              {translatedPreset}
             </button>
-          ))}
+            );
+          })}
         </div>
       </div>
 
       {/* 时间自己预览 */}
       <div className="rounded-lg border border-border bg-bg-card/40 p-4">
-        <p className="mb-3 text-xs text-text-dim">即将发言的 4 个时间自己:</p>
+        <p className="mb-3 text-xs text-text-dim">{t('future.speakersPreview')}</p>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {TIME_AGENTS.map((agent) => (
             <div
@@ -339,9 +344,10 @@ function InputPhase({ question, setQuestion, onSubmit }: InputPhaseProps) {
 interface SpeakingPhaseProps {
   question: string;
   onComplete: () => void;
+  t: (key: string, vars?: Record<string, string | number>) => string;
 }
 
-function SpeakingPhase({ question, onComplete }: SpeakingPhaseProps) {
+function SpeakingPhase({ question, onComplete, t }: SpeakingPhaseProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
 
@@ -372,7 +378,7 @@ function SpeakingPhase({ question, onComplete }: SpeakingPhaseProps) {
       {/* 议题展示 */}
       <div className="rounded-lg border-l-2 border-gold bg-bg-card/60 p-4">
         <p className="mb-1 text-xs uppercase tracking-wider text-text-dim">
-          你的决定
+          {t('future.yourDecision')}
         </p>
         <p className="font-serif text-lg text-text">&ldquo;{question}&rdquo;</p>
       </div>
@@ -438,7 +444,7 @@ function SpeakingPhase({ question, onComplete }: SpeakingPhaseProps) {
             onClick={onComplete}
             className="inline-flex items-center gap-1.5 text-xs text-text-dim transition-colors hover:text-gold"
           >
-            跳过发言
+            {t('future.skipSpeech')}
             <ChevronRight className="h-3 w-3" />
           </button>
         </div>
@@ -453,9 +459,10 @@ interface FutureReportProps {
   question: string;
   onRestart: () => void;
   onViewTimeline: () => void;
+  t: (key: string, vars?: Record<string, string | number>) => string;
 }
 
-function FutureReport({ question, onRestart, onViewTimeline }: FutureReportProps) {
+function FutureReport({ question, onRestart, onViewTimeline, t }: FutureReportProps) {
   return (
     <motion.div
       variants={pageVariants}
@@ -468,17 +475,17 @@ function FutureReport({ question, onRestart, onViewTimeline }: FutureReportProps
       <div className="text-center">
         <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-gold-dim bg-gold-soft px-4 py-1.5 text-xs font-medium text-gold">
           <Sparkles className="h-3.5 w-3.5" />
-          <span>未来推演报告</span>
+          <span>{t('future.reportBadge')}</span>
         </div>
         <h1 className="font-serif text-3xl text-text md:text-4xl">
-          <span className="text-gradient-gold">来自未来的回信</span>
+          <span className="text-gradient-gold">{t('future.reportTitle')}</span>
         </h1>
       </div>
 
       {/* 议题 */}
       <div className="rounded-lg border-l-2 border-gold bg-bg-card/60 p-5">
         <p className="mb-1 text-xs uppercase tracking-wider text-text-dim">
-          议题
+          {t('future.topic')}
         </p>
         <blockquote className="font-serif text-xl text-text">
           &ldquo;{question}&rdquo;
@@ -488,26 +495,21 @@ function FutureReport({ question, onRestart, onViewTimeline }: FutureReportProps
       {/* 总结 */}
       <Card hover={false}>
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-text-dim">
-          时间共识
+          {t('future.consensus')}
         </h2>
         <p className="text-sm leading-relaxed text-text-soft">
-          4 个时间维度的你已就此决定完成发言。20 岁的你呼唤冒险，当前的你权衡
-          现实，50 岁的你提供经验视角，80 岁的你回望意义。综合来看，
-          <span className="text-gold">「接受海外工作」</span>
-          在长期后悔概率上显著低于「拒绝」。建议采取
-          <span className="text-gold">「3 年期限的接受」</span>
-          策略：既拥抱机会，又保留回归的余地。
+          {t('future.consensusText', { accept: t('future.acceptLabel'), reject: t('future.rejectLabel'), balanced: t('future.balancedLabel') })}
         </p>
       </Card>
 
       {/* 时间冲突值 + 雷达图 */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Card hover={false}>
-          <h3 className="mb-3 text-sm font-semibold text-text">时间冲突值</h3>
+          <h3 className="mb-3 text-sm font-semibold text-text">{t('future.conflictTitle')}</h3>
           <div className="space-y-3">
             <div>
               <div className="mb-1 flex items-center justify-between text-xs">
-                <span className="text-text-soft">20 岁 vs 当前</span>
+                <span className="text-text-soft">{t('future.conflict20vsNow')}</span>
                 <span className="font-medium text-orange">62</span>
               </div>
               <div className="h-1.5 overflow-hidden rounded-full bg-border">
@@ -521,7 +523,7 @@ function FutureReport({ question, onRestart, onViewTimeline }: FutureReportProps
             </div>
             <div>
               <div className="mb-1 flex items-center justify-between text-xs">
-                <span className="text-text-soft">当前 vs 50 岁</span>
+                <span className="text-text-soft">{t('future.conflictNowvs50')}</span>
                 <span className="font-medium text-blue">38</span>
               </div>
               <div className="h-1.5 overflow-hidden rounded-full bg-border">
@@ -535,7 +537,7 @@ function FutureReport({ question, onRestart, onViewTimeline }: FutureReportProps
             </div>
             <div>
               <div className="mb-1 flex items-center justify-between text-xs">
-                <span className="text-text-soft">50 岁 vs 80 岁</span>
+                <span className="text-text-soft">{t('future.conflict50vs80')}</span>
                 <span className="font-medium text-green">22</span>
               </div>
               <div className="h-1.5 overflow-hidden rounded-full bg-border">
@@ -549,9 +551,7 @@ function FutureReport({ question, onRestart, onViewTimeline }: FutureReportProps
             </div>
             <div className="mt-3 rounded-lg border border-gold-dim/40 bg-gold-soft/10 p-3">
               <p className="text-xs text-text-soft">
-                <span className="font-semibold text-gold">综合时间冲突值：41</span>
-                {' '}
-                · 中等程度。最大的张力在 20 岁与当前之间——理想与现实的经典拉锯。
+                <span className="font-semibold text-gold">{t('future.conflictSummary', { value: 41 })}</span>
               </p>
             </div>
           </div>
@@ -559,7 +559,7 @@ function FutureReport({ question, onRestart, onViewTimeline }: FutureReportProps
 
         <Card hover={false} className="flex flex-col items-center justify-center">
           <h3 className="mb-3 self-start text-sm font-semibold text-text">
-            未来自我画像
+            {t('future.radarTitle')}
           </h3>
           <RadarChart
             data={MOCK_RADAR}
@@ -569,21 +569,21 @@ function FutureReport({ question, onRestart, onViewTimeline }: FutureReportProps
             animated={true}
           />
           <p className="mt-2 text-[10px] text-text-dim">
-            接受海外机会后的 5 年自我画像
+            {t('future.radarSubtitle')}
           </p>
         </Card>
       </div>
 
       {/* 行动建议 */}
       <Card hover={false}>
-        <h3 className="mb-3 text-sm font-semibold text-text">来自未来的建议</h3>
+        <h3 className="mb-3 text-sm font-semibold text-text">{t('future.adviceTitle')}</h3>
         <ul className="space-y-2">
           {[
-            '设定 3 年期限：去海外，但明确 3 年后评估是否回归',
-            '保留退路：与现有公司协商留职停薪或远程选项',
-            '关系经营：每月与重要的人视频 2 次，每年回国 1-2 次',
-            '财务缓冲：储备 6 个月生活费作为应急基金',
-            '记录体验：每周写一封给未来自己的信，沉淀这段经历',
+            t('future.advice1'),
+            t('future.advice2'),
+            t('future.advice3'),
+            t('future.advice4'),
+            t('future.advice5'),
           ].map((point, idx) => (
             <li key={idx} className="flex items-start gap-2 text-sm text-text-soft">
               <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gold-soft text-[10px] font-bold text-gold">
@@ -598,8 +598,7 @@ function FutureReport({ question, onRestart, onViewTimeline }: FutureReportProps
       {/* 免责声明 */}
       <div className="relative overflow-hidden rounded-lg border border-gold-dim/50 bg-gold-soft/30 p-5 text-center">
         <p className="text-sm font-medium text-gold md:text-base">
-          未来无法被预测，只能被想象。这封信是可能的未来之一，不是答案。
-          最终的决定权，永远在你手里。
+          {t('future.disclaimer')}
         </p>
       </div>
 
@@ -610,16 +609,16 @@ function FutureReport({ question, onRestart, onViewTimeline }: FutureReportProps
           onClick={onViewTimeline}
         >
           <Eye className="h-4 w-4" />
-          回看时间线
+          {t('future.viewTimeline')}
         </Button>
         <Button variant="gold" onClick={onRestart}>
           <RotateCcw className="h-4 w-4" />
-          重新推演
+          {t('future.restart')}
         </Button>
         <Button asChild variant="ghost">
           <Link href="/council">
             <ArrowLeft className="h-4 w-4" />
-            返回议会
+            {t('future.backCouncil')}
           </Link>
         </Button>
       </div>
@@ -632,6 +631,7 @@ function FutureReport({ question, onRestart, onViewTimeline }: FutureReportProps
 export default function FutureCouncilPage() {
   const router = useRouter();
   const pathname = usePathname();
+  const { t } = useTranslation();
   const { isAuthenticated, isInitialized, checkAuth } = useAuthStore();
   const [phase, setPhase] = useState<FuturePhase>('idle');
   const [question, setQuestion] = useState('');
@@ -683,7 +683,7 @@ export default function FutureCouncilPage() {
         <main className="relative z-10 flex min-h-screen items-center justify-center">
           <div className="flex flex-col items-center gap-4 text-text-soft">
             <Loader2 size={32} className="animate-spin text-gold" />
-            <p className="text-sm">正在验证登录状态...</p>
+            <p className="text-sm">{t('common.loading')}</p>
           </div>
         </main>
       </>
@@ -703,11 +703,11 @@ export default function FutureCouncilPage() {
             className="inline-flex items-center gap-1.5 text-sm text-text-soft transition-colors hover:text-gold"
           >
             <ArrowLeft className="h-4 w-4" />
-            返回议会
+            {t('future.backCouncil')}
           </button>
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-gold" />
-            <span className="text-sm font-medium text-text">未来议会</span>
+            <span className="text-sm font-medium text-text">{t('future.headerTitle')}</span>
           </div>
         </div>
       </header>
@@ -722,6 +722,7 @@ export default function FutureCouncilPage() {
               question={question}
               setQuestion={setQuestion}
               onSubmit={handleSubmit}
+              t={t}
             />
           )}
 
@@ -737,16 +738,16 @@ export default function FutureCouncilPage() {
             >
               <div className="text-center">
                 <h2 className="font-serif text-2xl text-text md:text-3xl">
-                  <span className="text-gradient-gold">时间线推演</span>
-                </h2>
-                <p className="mt-2 text-sm text-text-soft">
-                  3 条分支 · 1 年 / 5 年 / 10 年后的自己
+                  <span className="text-gradient-gold">{t('future.timelineTitle')}</span>
+                  </h2>
+                  <p className="mt-2 text-sm text-text-soft">
+                    {t('future.timelineSubtitle')}
                 </p>
               </div>
               <TimelineExplorer branches={MOCK_TIMELINE_BRANCHES} />
               <div className="flex justify-center">
                 <Button variant="gold" onClick={handleTimelineDone}>
-                  召唤 4 个时间自己
+                  {t('future.summonVoices')}
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
@@ -759,6 +760,7 @@ export default function FutureCouncilPage() {
               key="speaking"
               question={question}
               onComplete={handleSpeakingComplete}
+              t={t}
             />
           )}
 
@@ -778,7 +780,7 @@ export default function FutureCouncilPage() {
               />
               <div className="flex justify-center">
                 <Button variant="gold" onClick={handleRegretComplete}>
-                  生成未来推演报告
+                  {t('future.generateReport')}
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
@@ -792,6 +794,7 @@ export default function FutureCouncilPage() {
               question={question}
               onRestart={handleRestart}
               onViewTimeline={handleViewTimeline}
+              t={t}
             />
           )}
         </AnimatePresence>
