@@ -434,7 +434,7 @@ function QuestionInput({ question, setQuestion, onSubmit, canSubmit }: QuestionI
         >
           <Sparkles className="h-8 w-8 text-gold" />
         </motion.div>
-        <h1 className="font-serif text-3xl text-text md:text-4xl">
+        <h1 className="font-serif text-2xl sm:text-3xl text-text md:text-4xl">
           <span className="text-gradient-gold">{t('council.askDestiny')}</span>
         </h1>
         <p className="mt-2 text-sm text-text-soft">
@@ -571,7 +571,7 @@ function MemberSelection({
                 </span>
                 <button
                   onClick={() => onToggle(member.id)}
-                  className="ml-0.5 flex h-4 w-4 items-center justify-center rounded-full text-text-dim hover:bg-bg-card hover:text-red"
+                  className="ml-0.5 flex h-6 w-6 items-center justify-center rounded-full text-text-dim hover:bg-bg-card hover:text-red"
                   aria-label={`取消选择 ${member.name}`}
                 >
                   <X className="h-3 w-3" />
@@ -671,16 +671,16 @@ function MemberSelection({
                   <span className="text-sm font-medium text-text">
                     {member.name}
                   </span>
-                  <span className="mt-0.5 line-clamp-1 text-[10px] text-text-dim">
+                  <span className="mt-0.5 line-clamp-1 text-xs text-text-dim">
                     {member.identity}
                   </span>
                   {member.expertise.length > 0 && (
-                    <span className="mt-1 line-clamp-1 text-[10px] text-gold">
+                    <span className="mt-1 line-clamp-1 text-xs text-gold">
                       {member.expertise.slice(0, 2).join(' · ')}
                     </span>
                   )}
                   {member.source === 'custom' && (
-                    <span className="mt-1 rounded-full bg-gold-soft px-1.5 py-0.5 text-[9px] text-gold">
+                    <span className="mt-1 rounded-full bg-gold-soft px-1.5 py-0.5 text-[11px] text-gold">
                       {t('council.custom')}
                     </span>
                   )}
@@ -925,7 +925,7 @@ function MeetingRoom({
                     <span className="text-xs font-medium text-text">
                       {msg.personaName}
                     </span>
-                    <span className="text-[10px] text-text-dim">
+                    <span className="text-xs text-text-dim">
                       {persona?.philosophy}
                     </span>
                   </div>
