@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { chatCompletion, isOpenAIConfigured, DEFAULT_MODEL } from '@/lib/ai/openai-client';
+import { chatCompletion, isOpenAIConfigured, DEFAULT_MODEL, getLanguageInstruction } from '@/lib/ai/openai-client';
 import { getAgentPrompt, isAgentId } from '@/lib/ai/agent-prompts';
 import { getMockAgentReply } from '@/lib/ai/mock-data';
 import { getAgentById } from '@/lib/agents';
@@ -39,6 +39,7 @@ interface AgentRequestBody {
   agentId?: unknown;
   question?: unknown;
   context?: unknown;
+  locale?: unknown;
 }
 
 export async function POST(request: Request): Promise<NextResponse> {
@@ -54,7 +55,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   // 2. 参数校验
-  const { agentId, question, context } = body;
+  const { agentId, question, context, locale } = body;
 
   if (typeof agentId !== 'string' || !isAgentId(agentId)) {
     return NextResponse.json(
@@ -102,7 +103,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   //    统一使用 DeepSeek 默认模型 deepseek-chat，忽略 agent.model 中可能配置的 gpt-4o / deepseek-r1
   //    （DeepSeek API 当前仅提供 deepseek-chat 与 deepseek-reasoner 两个模型）。
   try {
-    const systemPrompt = getAgentPrompt(agentId);
+    const systemPrompt = getAgentPrompt(agentId) + '\n\n' + getLanguageInstruction(typeof locale === 'string' ? locale : 'zh');
     const userMessage = contextStr
       ? `议会上下文：\n${contextStr}\n\n用户追问：${question}\n\n请以${agent.name}的身份回复（150-250字）。`
       : `用户提问：${question}\n\n请以${agent.name}的身份回复（150-250字）。`;
