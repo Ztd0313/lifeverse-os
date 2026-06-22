@@ -90,7 +90,7 @@ function ConflictItem({
       transition={{ duration: 0.4, delay: index * 0.1, ease: 'easeOut' }}
     >
       {/* Agent 对 */}
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
         {/* Agent A */}
         <div className="flex items-center gap-2 min-w-0">
           <span className="text-lg flex-shrink-0">{avatarA}</span>
