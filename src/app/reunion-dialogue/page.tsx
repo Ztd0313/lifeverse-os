@@ -214,7 +214,7 @@ function clearHistory(optionId: string): void {
 export default function ReunionDialoguePage() {
   const router = useRouter();
   const pathname = usePathname();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { user, isAuthenticated, isInitialized, checkAuth, token } = useAuthStore();
   const { canInnerDialogue, recordReunionDialogue, membership } =
     useMembershipStore();
@@ -362,6 +362,7 @@ export default function ReunionDialoguePage() {
           history: historyForApi,
           timeDirection: currentTimeOption.direction,
           yearsOffset: currentTimeOption.yearsOffset,
+          locale,
         }),
       });
 
