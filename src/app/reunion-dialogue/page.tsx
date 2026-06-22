@@ -489,7 +489,7 @@ export default function ReunionDialoguePage() {
           className="shrink-0 border-b border-border bg-[rgba(6,7,16,0.6)] backdrop-blur-md"
         >
           <div className="mx-auto max-w-3xl px-4 py-3">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => router.push('/')}
@@ -506,7 +506,7 @@ export default function ReunionDialoguePage() {
                     <h1 className="text-sm font-semibold text-text">
                       {t('reunionDialogue.title')}
                     </h1>
-                    <p className="text-[11px] text-text-dim">
+                    <p className="text-xs text-text-dim">
                       {t('reunionDialogue.subtitle')}
                     </p>
                   </div>
@@ -515,14 +515,14 @@ export default function ReunionDialoguePage() {
               <div className="flex items-center gap-2">
                 {/* ===== 用量指示器 ===== */}
                 {dialogueCheck.remaining === -1 ? (
-                  <span className="inline-flex items-center gap-1 rounded-full border border-[rgba(184,160,200,0.3)] bg-[rgba(184,160,200,0.12)] px-2.5 py-1 text-[11px] font-medium text-[#b8a0c8]">
+                  <span className="inline-flex items-center gap-1 rounded-full border border-[rgba(184,160,200,0.3)] bg-[rgba(184,160,200,0.12)] px-2.5 py-1 text-xs font-medium text-[#b8a0c8]">
                     <Zap size={11} />
                     {t('reunionDialogue.unlimited')}
                   </span>
                 ) : (
                   <span
                     className={cn(
-                      'inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium',
+                      'inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium',
                       dialogueCheck.remaining === 0
                         ? 'border-[rgba(232,93,93,0.3)] bg-[rgba(232,93,93,0.12)] text-red'
                         : 'border-gold-dim bg-gold-soft text-gold'
@@ -617,7 +617,7 @@ export default function ReunionDialoguePage() {
                       setHistoryLoaded(false);
                     }}
                     placeholder={t('reunionDialogue.yearPlaceholder', { maxYear: CURRENT_YEAR + 50 })}
-                    className="h-9 w-40 rounded-lg border border-border bg-bg-card px-3 text-xs text-text placeholder:text-text-dim focus:border-gold-dim focus:outline-none focus:ring-1 focus:ring-gold-dim"
+                    className="h-9 w-32 sm:w-40 rounded-lg border border-border bg-bg-card px-3 text-xs text-text placeholder:text-text-dim focus:border-gold-dim focus:outline-none focus:ring-1 focus:ring-gold-dim"
                   />
                   {customYear && (
                     <span className="text-xs text-text-dim">
@@ -648,7 +648,7 @@ export default function ReunionDialoguePage() {
                     <p className="text-xs font-medium text-text">
                       {t('reunionDialogue.quotaExhausted')}
                     </p>
-                    <p className="text-[10px] text-text-dim">
+                    <p className="text-xs text-text-dim">
                       {t('reunionDialogue.quotaDetail', { tier: getTierConfig(membership.tier).name, limit: dialogueCheck.limit })}
                     </p>
                   </div>
@@ -815,7 +815,7 @@ export default function ReunionDialoguePage() {
                 )}
               </Button>
             </div>
-            <p className="mt-2 text-[10px] text-text-dim">
+            <p className="mt-2 text-xs text-text-dim">
               {t('reunionDialogue.inputHint')}
             </p>
           </div>
