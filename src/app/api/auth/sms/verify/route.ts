@@ -22,6 +22,9 @@ import type { User } from '@/types';
 /** 中国大陆手机号正则 */
 const PHONE_REGEX = /^1[3-9]\d{9}$/;
 
+/** 固定测试验证码（正式上线短信服务后移除） */
+const TEST_CODE = '888888';
+
 /**
  * POST /api/auth/sms/verify
  */
@@ -64,7 +67,9 @@ export async function POST(
     }
 
     // ===== 校验验证码 =====
-    const isValid = userStore.verifySmsCode(phone, code);
+    // 测试阶段：固定验证码 888888 直接通过
+    // 同时也校验内存中的验证码（兼容旧逻辑）
+    const isValid = code === TEST_CODE || userStore.verifySmsCode(phone, code);
     if (!isValid) {
       return NextResponse.json(
         { success: false, error: '验证码错误或已过期，请重新获取' },
