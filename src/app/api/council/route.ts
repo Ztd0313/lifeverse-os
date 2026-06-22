@@ -54,6 +54,7 @@ interface CouncilRequestBody {
   councilType?: unknown;
   rounds?: unknown;
   userContext?: unknown;
+  locale?: unknown;
 }
 
 export async function POST(request: Request): Promise<NextResponse> {
@@ -69,7 +70,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   // 2. 参数校验
-  const { question, agentIds, councilType, rounds, userContext } = body;
+  const { question, agentIds, councilType, rounds, userContext, locale } = body;
 
   if (typeof question !== 'string' || question.trim().length === 0) {
     return NextResponse.json(
@@ -138,6 +139,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         userContext && typeof userContext === 'object'
           ? (userContext as Record<string, unknown>)
           : undefined,
+      locale: typeof locale === 'string' ? locale : 'zh',
     });
 
     return NextResponse.json(result, { status: 200 });
