@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ArrowLeft,
   Play,
   Pause,
   ChevronDown,
@@ -205,13 +204,6 @@ export default function MemoryReplayPage() {
             className="mb-8 flex items-center justify-between gap-4"
           >
             <div className="flex items-center gap-3">
-              <button
-                onClick={() => router.push('/memory')}
-                className="flex h-9 w-9 items-center justify-center rounded-full text-text-soft transition-colors hover:bg-bg-card hover:text-gold"
-                aria-label={t('memoryReplay.back')}
-              >
-                <ArrowLeft size={18} />
-              </button>
               <div>
                 <h1 className="font-serif text-2xl text-gradient-gold sm:text-3xl">
                   {t('memoryReplay.title')}
