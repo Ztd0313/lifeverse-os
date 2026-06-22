@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { ConflictPair, Persona } from '@/types';
 import { cn, getConflictLevel } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 
 /**
  * 冲突可视化组件 Props
@@ -205,6 +206,7 @@ export function ConflictVisualization({
   personas,
   className,
 }: ConflictVisualizationProps) {
+  const { t } = useTranslation();
   // 构建 persona 查找表
   const personaMap = useMemo(() => {
     const map = new Map<string, Persona>();
@@ -226,7 +228,7 @@ export function ConflictVisualization({
         )}
       >
         <span className="text-xs text-text-dim">
-          暂无冲突 · 议会进行中
+          {t('council.conflict.emptyState')}
         </span>
       </div>
     );
@@ -238,14 +240,14 @@ export function ConflictVisualization({
       <div className="flex items-center justify-between px-1 pb-1">
         <div className="flex items-center gap-2">
           <span className="text-xs font-medium text-text-soft">
-            价值冲突
+            {t('council.conflict.title')}
           </span>
           <span className="rounded-full bg-bg-soft px-2 py-0.5 text-[10px] text-text-dim">
-            {conflicts.length} 对
+            {t('council.conflict.pairCount', { count: conflicts.length })}
           </span>
         </div>
         <span className="text-[10px] text-text-dim">
-          冲突值越高，分歧越大
+          {t('council.conflict.hint')}
         </span>
       </div>
 
