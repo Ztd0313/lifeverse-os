@@ -364,5 +364,116 @@ export function createDelayedScaleIn(delay: number): Variants {
   };
 }
 
+// ===== 品牌级动效变体 =====
+
+/**
+ * 宇宙穿越 — 页面进入时的星空穿越感
+ *
+ * 配合 AnimatePresence 使用，带来轻微缩放 + 模糊的穿越过渡。
+ * 缓动曲线与 Header 抽屉保持一致：[0.22, 1, 0.36, 1]。
+ */
+export const cosmicEntry: Variants = {
+  initial: { opacity: 0, scale: 0.95, filter: 'blur(12px)' },
+  animate: { opacity: 1, scale: 1, filter: 'blur(0px)' },
+  exit: { opacity: 0, scale: 1.05, filter: 'blur(12px)' },
+};
+
+/**
+ * 行星轨道 — 模块入口的轨道旋转感
+ *
+ * 从轻微缩小 + 反向旋转归位，营造行星切入轨道的仪式感。
+ */
+export const planetaryOrbit: Variants = {
+  initial: { opacity: 0, scale: 0.8, rotate: -15 },
+  animate: {
+    opacity: 1,
+    scale: 1,
+    rotate: 0,
+    transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
+  },
+};
+
+/**
+ * 星系汇聚 — 议会启动时的汇聚效果
+ *
+ * 从大尺度模糊状态收敛至清晰，适用于议会启动、命运报告揭晓。
+ */
+export const galaxyConvergence: Variants = {
+  initial: { opacity: 0, scale: 1.5, filter: 'blur(20px)' },
+  animate: {
+    opacity: 1,
+    scale: 1,
+    filter: 'blur(0px)',
+    transition: { duration: 1.2, ease: [0.22, 1, 0.36, 1] },
+  },
+};
+
+/**
+ * 记忆卡片翻转
+ *
+ * 卡片沿 Y 轴翻转入场，适用于记忆卡片揭晓与详情切换。
+ */
+export const cardFlip: Variants = {
+  initial: { rotateY: 180, opacity: 0 },
+  animate: { rotateY: 0, opacity: 1 },
+  exit: { rotateY: -180, opacity: 0 },
+};
+
+/**
+ * 重逢光晕渐入
+ *
+ * 从高亮模糊光团收敛为清晰内容，适用于重逢对话页面。
+ */
+export const lightHaloEntry: Variants = {
+  initial: { opacity: 0, scale: 0.5, filter: 'blur(30px) brightness(2)' },
+  animate: {
+    opacity: 1,
+    scale: 1,
+    filter: 'blur(0px) brightness(1)',
+    transition: { duration: 1.5, ease: [0.22, 1, 0.36, 1] },
+  },
+};
+
+/**
+ * 共识聚拢 — 多个元素向中心聚拢
+ *
+ * 动态变体：通过 `custom` 传入元素索引 i，元素从圆周等分点
+ * （每 60°）向中心聚拢。使用方式：
+ * ```tsx
+ * <motion.div variants={consensusConverge} custom={index} initial="initial" animate="animate" />
+ * ```
+ */
+export const consensusConverge: Variants = {
+  initial: (i: number = 0) => ({
+    opacity: 0,
+    scale: 1.8,
+    x: Math.cos((i * Math.PI) / 3) * 100,
+    y: Math.sin((i * Math.PI) / 3) * 100,
+  }),
+  animate: {
+    opacity: 1,
+    scale: 1,
+    x: 0,
+    y: 0,
+  },
+};
+
+/**
+ * 分歧光谱 — 元素向两侧扩散
+ *
+ * 动态变体：通过 `custom` 传入元素索引 i，偶数索引向左、
+ * 奇数索引向右扩散，形成光谱分叉效果。使用方式：
+ * ```tsx
+ * <motion.div variants={divergenceSpectrum} custom={index} initial="initial" animate="animate" />
+ * ```
+ */
+export const divergenceSpectrum: Variants = {
+  initial: { opacity: 0, x: 0 },
+  animate: (i: number = 0) => ({
+    opacity: 1,
+    x: i % 2 === 0 ? -30 : 30,
+  }),
+};
+
 // Re-export transitions for convenience
 export { EASE, STAGGER_CHILDREN, STAGGER_SLOW };
