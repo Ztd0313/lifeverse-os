@@ -2,12 +2,11 @@
 
 import * as React from 'react';
 import { motion } from 'framer-motion';
-import { Check, ShoppingCart, Lock, Sparkles } from 'lucide-react';
+import { Check, ShoppingCart, Lock, Sparkles, Headphones } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { RadarChart } from '@/components/charts/RadarChart';
-import { VoiceTrial } from '@/components/membership/VoiceTrial';
 import { cn } from '@/lib/utils';
 import type { MarketplaceAgent } from '@/lib/marketplace-data';
 import { useMarketplaceStore } from '@/stores/marketplace-store';
@@ -155,15 +154,16 @@ export function AgentMarketCard({ agent, onPreview, index = 0 }: AgentMarketCard
 
           {/* 按钮组 */}
           <div className="flex gap-2">
-            {/* 语音试听按钮 */}
-            <VoiceTrial
-              text={agent.description || agent.name}
-              enabled={isMember || agent.isFree}
-              onUpgradeClick={() => {
-                window.location.href = '/membership';
-              }}
+            {/* 试听按钮 — 打开预览弹窗，所有用户可用 */}
+            <Button
+              variant="ghost"
+              size="sm"
               className="flex-1 justify-center"
-            />
+              onClick={() => onPreview?.(agent)}
+            >
+              <Headphones className="h-3.5 w-3.5" />
+              试听
+            </Button>
 
             {/* 购买/已拥有/已加入按钮 */}
             {isOwned ? (
