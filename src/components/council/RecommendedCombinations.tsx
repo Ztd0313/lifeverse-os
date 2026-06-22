@@ -12,6 +12,8 @@ import {
 } from '@/lib/ai/agent-templates';
 import { getAgentById } from '@/lib/agents';
 import { fadeInUp } from '@/lib/motion/variants';
+import { useTranslation } from '@/lib/i18n';
+import { useI18nStore } from '@/stores/i18n-store';
 
 // ===== 成员信息查找 =====
 
@@ -54,7 +56,7 @@ function findMemberBrief(id: string): MemberBrief {
   // 找不到时返回占位
   return {
     id,
-    name: '未知',
+    name: useI18nStore.getState().t('council.unknown'),
     avatar: '❓',
   };
 }
@@ -83,6 +85,7 @@ function CombinationCard({
   onUse,
   isActive,
 }: CombinationCardProps) {
+  const { t } = useTranslation();
   const members = combination.memberIds.map(findMemberBrief);
 
   return (
@@ -108,7 +111,7 @@ function CombinationCard({
             {combination.name}
           </h3>
           <p className="mt-0.5 text-xs text-text-dim">
-            {combination.memberCount} 位成员
+            {t('council.memberCount', { count: combination.memberCount })}
           </p>
         </div>
       </div>
@@ -121,7 +124,7 @@ function CombinationCard({
       {/* 适用场景 */}
       <div>
         <span className="text-[10px] font-medium tracking-wider text-text-dim">
-          适用场景
+          {t('council.applicableScenarios')}
         </span>
         <div className="mt-1.5 flex flex-wrap gap-1.5">
           {combination.applicableScenarios.map((scenario) => (
@@ -138,7 +141,7 @@ function CombinationCard({
       {/* 成员头像列表 */}
       <div>
         <span className="text-[10px] font-medium tracking-wider text-text-dim">
-          议会成员
+          {t('council.councilMembers')}
         </span>
         <div className="mt-2 flex items-center gap-1">
           {members.map((member, i) => (
@@ -178,7 +181,7 @@ function CombinationCard({
         )}
       >
         <Zap className="h-3.5 w-3.5" />
-        {isActive ? '已选用此组合' : '一键使用'}
+        {isActive ? t('council.combinationUsed') : t('council.useCombination')}
         {!isActive && <ChevronRight className="h-3.5 w-3.5" />}
       </button>
     </motion.div>
@@ -214,6 +217,7 @@ export function RecommendedCombinations({
   onUseCombination,
   activeCombinationId,
 }: RecommendedCombinationsProps) {
+  const { t } = useTranslation();
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   return (
@@ -222,12 +226,12 @@ export function RecommendedCombinations({
       <div className="mb-4 flex items-center gap-2">
         <Users className="h-5 w-5 text-gold" />
         <h2 className="text-lg font-semibold text-text">
-          不知道选谁？试试系统推荐组合
+          {t('council.recommendedTitle')}
         </h2>
       </div>
 
       <p className="mb-4 text-sm text-text-soft">
-        10 种针对常见人生场景的成员搭配，一键选用后还可继续调整
+        {t('council.recommendedDesc')}
       </p>
 
       {/* 横向滚动卡片 */}
