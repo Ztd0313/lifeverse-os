@@ -4,7 +4,6 @@ import * as React from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ArrowLeft,
   Sparkles,
   BookHeart,
   Plus,
@@ -292,16 +291,6 @@ export default function DreamPage() {
               </div>
             </motion.section>
           )}
-
-          {/* ===== 返回首页 ===== */}
-          <motion.div variants={fadeInUp} className="flex justify-center">
-            <Button asChild variant="ghost" size="md">
-              <Link href="/">
-                <ArrowLeft className="h-4 w-4" />
-                {t('innerDialogue.backHome')}
-              </Link>
-            </Button>
-          </motion.div>
         </motion.div>
       </main>
 
