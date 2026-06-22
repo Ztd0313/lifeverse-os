@@ -21,7 +21,8 @@ import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { cn } from '@/lib/utils';
-import { useAuthStore } from '@/stores/auth-store';
+import { useAuthStore, getRedirectPath } from '@/stores/auth-store';
+import { useTranslation } from '@/lib/i18n';
 
 // ===== 常量 =====
 
@@ -64,6 +65,7 @@ function PhoneLoginForm() {
   const { loginWithPhone, isLoading } = useAuthStore();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useTranslation();
 
   // 表单状态
   const [phone, setPhone] = React.useState('');
@@ -103,11 +105,11 @@ function PhoneLoginForm() {
 
     // 手机号校验
     if (!trimmedPhone) {
-      setPhoneError('请输入手机号');
+      setPhoneError(t('auth.phoneRequired'));
       return;
     }
     if (!PHONE_REGEX.test(trimmedPhone)) {
-      setPhoneError('请输入正确的中国大陆手机号（1 开头，11 位）');
+      setPhoneError(t('auth.phoneInvalid'));
       return;
     }
 
@@ -121,20 +123,20 @@ function PhoneLoginForm() {
       const data = await res.json();
 
       if (!res.ok || !data.success) {
-        setPhoneError(data.error || '验证码发送失败');
+        setPhoneError(data.error || t('auth.codeSendFailed'));
         return;
       }
 
       // 发送成功，启动倒计时
       setCountdown(COUNTDOWN_SECONDS);
-      setNotice('验证码已发送，5 分钟内有效');
+      setNotice(t('auth.codeSent'));
 
       // 开发环境显示验证码
       if (data.debugCode) {
         setDebugCode(data.debugCode);
       }
     } catch {
-      setPhoneError('网络错误，请稍后重试');
+      setPhoneError(t('auth.networkError'));
     } finally {
       setIsSending(false);
     }
@@ -155,30 +157,31 @@ function PhoneLoginForm() {
 
     // 校验
     if (!trimmedPhone) {
-      setPhoneError('请输入手机号');
+      setPhoneError(t('auth.phoneRequired'));
       return;
     }
     if (!PHONE_REGEX.test(trimmedPhone)) {
-      setPhoneError('手机号格式不正确');
+      setPhoneError(t('auth.phoneFormatInvalid'));
       return;
     }
     if (!trimmedCode) {
-      setCodeError('请输入验证码');
+      setCodeError(t('auth.codeRequired'));
       return;
     }
     if (!/^\d{6}$/.test(trimmedCode)) {
-      setCodeError('验证码应为 6 位数字');
+      setCodeError(t('auth.codeFormatInvalid'));
       return;
     }
 
     try {
       await loginWithPhone(trimmedPhone, trimmedCode);
       // 登录成功，跳转
-      const redirect = searchParams.get('redirect') || '/';
+      // 优先使用 URL 中的 redirect 参数，其次使用 localStorage 中记忆的路径，最后回首页
+      const redirect = searchParams.get('redirect') || getRedirectPath() || '/';
       router.push(redirect);
     } catch (error) {
       setFormError(
-        error instanceof Error ? error.message : '登录失败，请稍后重试'
+        error instanceof Error ? error.message : t('auth.loginFailed')
       );
     }
   };
@@ -191,7 +194,7 @@ function PhoneLoginForm() {
           htmlFor="auth-phone"
           className="block text-xs font-medium text-text-soft"
         >
-          手机号
+          {t('auth.phone')}
         </label>
         <div className="relative">
           <Phone
@@ -203,7 +206,7 @@ function PhoneLoginForm() {
             type="tel"
             inputMode="numeric"
             maxLength={11}
-            placeholder="请输入手机号"
+            placeholder={t('auth.phonePlaceholder')}
             value={phone}
             onChange={(e) => {
               // 仅允许数字
@@ -242,7 +245,7 @@ function PhoneLoginForm() {
           htmlFor="auth-code"
           className="block text-xs font-medium text-text-soft"
         >
-          验证码
+          {t('auth.code')}
         </label>
         <div className="flex gap-3">
           <div className="relative flex-1">
@@ -255,7 +258,7 @@ function PhoneLoginForm() {
               type="text"
               inputMode="numeric"
               maxLength={6}
-              placeholder="6 位验证码"
+              placeholder={t('auth.codePlaceholder')}
               value={code}
               onChange={(e) => {
                 setCode(e.target.value.replace(/\D/g, ''));
@@ -288,7 +291,7 @@ function PhoneLoginForm() {
             ) : countdown > 0 ? (
               `${countdown}s`
             ) : (
-              '获取验证码'
+              t('auth.getCode')
             )}
           </button>
         </div>
@@ -320,7 +323,7 @@ function PhoneLoginForm() {
             <span>{notice}</span>
             {debugCode && (
               <span className="ml-auto rounded bg-bg-soft px-2 py-0.5 font-mono text-gold">
-                测试码: {debugCode}
+                {t('auth.testCode')}: {debugCode}
               </span>
             )}
           </motion.div>
@@ -353,22 +356,22 @@ function PhoneLoginForm() {
         {isLoading ? (
           <>
             <Loader2 size={18} className="animate-spin" />
-            登录中...
+            {t('auth.loggingIn')}
           </>
         ) : (
-          '登录 / 注册'
+          t('auth.loginRegister')
         )}
       </Button>
 
       {/* 协议提示 */}
       <p className="text-center text-xs leading-relaxed text-text-dim">
-        登录即表示同意 LifeVerse
+        {t('auth.agreement')}
         <Link href="/" className="mx-1 text-gold/80 hover:text-gold link-underline">
-          服务协议
+          {t('auth.terms')}
         </Link>
         与
         <Link href="/" className="mx-1 text-gold/80 hover:text-gold link-underline">
-          隐私政策
+          {t('auth.privacy')}
         </Link>
       </p>
     </form>
@@ -385,6 +388,7 @@ function PhoneLoginForm() {
  */
 function WechatLoginForm() {
   const [refreshing, setRefreshing] = React.useState(false);
+  const { t } = useTranslation();
 
   /**
    * 刷新二维码（mock）
@@ -406,7 +410,7 @@ function WechatLoginForm() {
           {/* 二维码占位图案 */}
           <div className="flex flex-col items-center gap-3 text-text-dim">
             <QrCode size={64} className="text-gold/50" />
-            <span className="text-xs">微信二维码</span>
+            <span className="text-xs">{t('auth.wechatQrcode')}</span>
           </div>
         </motion.div>
 
@@ -415,7 +419,7 @@ function WechatLoginForm() {
           type="button"
           onClick={handleRefresh}
           className="absolute -bottom-2 -right-2 flex h-9 w-9 items-center justify-center rounded-full border border-gold-dim bg-bg-soft text-gold transition-all hover:bg-gold-soft hover:shadow-[0_0_16px_var(--shadow-gold)]"
-          aria-label="刷新二维码"
+          aria-label={t('auth.refreshQrcode')}
         >
           <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} />
         </button>
@@ -424,19 +428,19 @@ function WechatLoginForm() {
       {/* 提示文字 */}
       <div className="space-y-1 text-center">
         <p className="text-sm text-text">
-          请使用
-          <span className="mx-1 text-gold">微信</span>
-          扫描二维码登录
+          {t('auth.wechatScanPrefix')}
+          <span className="mx-1 text-gold">{t('auth.wechat')}</span>
+          {t('auth.wechatScanSuffix')}
         </p>
         <p className="text-xs text-text-dim">
-          扫码后请在手机上确认登录
+          {t('auth.wechatConfirm')}
         </p>
       </div>
 
       {/* 待对接提示 */}
       <div className="flex items-center gap-2 rounded-lg border border-border bg-bg-card/60 px-3 py-2 text-xs text-text-dim">
         <Sparkles size={12} className="text-gold/60" />
-        <span>微信扫码登录即将上线，请先使用手机验证码登录</span>
+        <span>{t('auth.wechatComingSoon')}</span>
       </div>
     </div>
   );
@@ -465,6 +469,7 @@ function AuthPageContent() {
   const { isAuthenticated, isInitialized, checkAuth } = useAuthStore();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useTranslation();
 
   // 登录方式切换：'phone' | 'wechat'
   const [loginMethod, setLoginMethod] = React.useState<'phone' | 'wechat'>(
@@ -479,7 +484,8 @@ function AuthPageContent() {
   // 已登录则跳转
   React.useEffect(() => {
     if (isInitialized && isAuthenticated) {
-      const redirect = searchParams.get('redirect') || '/';
+      // 优先使用 URL 中的 redirect 参数，其次使用 localStorage 中记忆的路径，最后回首页
+      const redirect = searchParams.get('redirect') || getRedirectPath() || '/';
       router.push(redirect);
     }
   }, [isInitialized, isAuthenticated, router, searchParams]);
@@ -505,7 +511,7 @@ function AuthPageContent() {
             <Button asChild variant="ghost" size="sm">
               <Link href="/">
                 <ArrowLeft className="h-4 w-4" />
-                返回首页
+                {t('auth.backHome')}
               </Link>
             </Button>
           </motion.div>
@@ -519,10 +525,10 @@ function AuthPageContent() {
                   LifeVerse
                 </span>
                 <h1 className="h-display text-3xl text-gradient-gold sm:text-4xl">
-                  欢迎回来
+                  {t('auth.welcome')}
                 </h1>
                 <p className="text-sm text-text-soft">
-                  登录你的生命宇宙
+                  {t('auth.subtitle')}
                 </p>
               </div>
 
@@ -539,7 +545,7 @@ function AuthPageContent() {
                   )}
                 >
                   <Phone size={14} />
-                  手机登录
+                  {t('auth.phoneLogin')}
                 </button>
                 <button
                   type="button"
@@ -552,7 +558,7 @@ function AuthPageContent() {
                   )}
                 >
                   <QrCode size={14} />
-                  微信登录
+                  {t('auth.wechatLogin')}
                 </button>
               </div>
 
@@ -580,7 +586,7 @@ function AuthPageContent() {
             variants={itemVariant}
             className="mt-8 text-center text-sm text-text-dim"
           >
-            &ldquo;每一个生命，都值得拥有自己的宇宙。&rdquo;
+            {t('auth.quote')}
           </motion.p>
         </motion.div>
       </main>
