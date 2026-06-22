@@ -3,13 +3,15 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Settings, Menu, X, Crown } from 'lucide-react';
+import { Settings, Menu, X, Crown, User as UserIcon, LogOut, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/brand/Logo';
 import { useMembershipStore } from '@/stores/membership-store';
 import { useAuthStore } from '@/stores/auth-store';
 import { MembershipBadge } from '@/components/membership/MembershipBadge';
+import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher';
+import { useTranslation } from '@/lib/i18n';
 
 /**
  * 导航链接配置
@@ -17,17 +19,19 @@ import { MembershipBadge } from '@/components/membership/MembershipBadge';
  * 完整导航：首页、智慧议会、未来议会、记忆星球、市场、内心对话、
  * 重逢对话、我的 Agent、历史
  * （移动端通过汉堡菜单展开）
+ *
+ * labelKey 对应 i18n 翻译路径
  */
 const NAV_LINKS = [
-  { href: '/', label: '首页' },
-  { href: '/council/wisdom', label: '智慧议会' },
-  { href: '/council/future', label: '未来议会' },
-  { href: '/memory', label: '记忆星球' },
-  { href: '/marketplace', label: '市场' },
-  { href: '/inner-dialogue', label: '内心对话' },
-  { href: '/reunion-dialogue', label: '重逢对话' },
-  { href: '/agents', label: '我的 Agent' },
-  { href: '/history', label: '历史' },
+  { href: '/', labelKey: 'nav.home' },
+  { href: '/council/wisdom', labelKey: 'nav.wisdomCouncil' },
+  { href: '/council/future', labelKey: 'nav.futureCouncil' },
+  { href: '/memory', labelKey: 'nav.memoryPlanet' },
+  { href: '/marketplace', labelKey: 'nav.marketplace' },
+  { href: '/inner-dialogue', labelKey: 'nav.innerDialogue' },
+  { href: '/reunion-dialogue', labelKey: 'nav.reunionDialogue' },
+  { href: '/agents', labelKey: 'nav.myAgent' },
+  { href: '/history', labelKey: 'nav.history' },
 ] as const;
 
 /**
@@ -36,7 +40,7 @@ const NAV_LINKS = [
  * 布局：
  * - 左侧：LifeVerse logo（serif 字体，金色）
  * - 中间：导航链接（首页 / 智慧议会 / 未来议会 / 记忆星球 / 市场 / 内心对话 / 重逢对话 / 我的 Agent / 历史）
- * - 右侧：设置按钮 + 移动端汉堡菜单按钮
+ * - 右侧：会员链接 + 会员标识 + 设置按钮 + 用户头像下拉菜单 + 移动端汉堡菜单按钮
  *
  * 特性：
  * - 毛玻璃效果（glass）
@@ -44,14 +48,19 @@ const NAV_LINKS = [
  * - 滚动时增加背景不透明度
  * - 响应式：移动端隐藏导航链接，通过汉堡菜单展开侧边抽屉
  * - 当前路由高亮
+ * - 用户头像下拉菜单：个人中心、设置、退出登录（Framer Motion 动画）
+ * - 未登录时显示"登录"按钮
  * - 无障碍：ARIA 标签、键盘导航支持
  */
 export function Header() {
   const [scrolled, setScrolled] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [userMenuOpen, setUserMenuOpen] = React.useState(false);
   const pathname = usePathname();
   const { membership } = useMembershipStore();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user, logout } = useAuthStore();
+  const { t } = useTranslation();
+  const userMenuRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -62,9 +71,10 @@ export function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // 路由切换时关闭移动端菜单
+  // 路由切换时关闭移动端菜单和用户菜单
   React.useEffect(() => {
     setMobileOpen(false);
+    setUserMenuOpen(false);
   }, [pathname]);
 
   // ESC 键关闭移动端菜单
@@ -76,6 +86,21 @@ export function Header() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [mobileOpen]);
+
+  // 点击用户菜单外部时关闭
+  React.useEffect(() => {
+    if (!userMenuOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(e.target as Node)
+      ) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [userMenuOpen]);
 
   // 锁定背景滚动
   React.useEffect(() => {
@@ -91,6 +116,12 @@ export function Header() {
   const isActive = (href: string): boolean => {
     if (href === '/') return pathname === '/';
     return pathname.startsWith(href);
+  };
+
+  /** 处理退出登录 */
+  const handleLogout = () => {
+    setUserMenuOpen(false);
+    logout();
   };
 
   return (
@@ -132,12 +163,12 @@ export function Header() {
                     : 'text-text-soft'
                 )}
               >
-                {link.label}
+                {t(link.labelKey)}
               </Link>
             ))}
           </nav>
 
-          {/* 右侧：会员链接 + 会员标识 + 设置按钮 + 移动端汉堡菜单 */}
+          {/* 右侧：会员链接 + 会员标识 + 设置按钮 + 语言切换器 + 用户头像下拉菜单 + 移动端汉堡菜单 */}
           <div className="flex items-center gap-2">
             {/* 会员导航链接（桌面端） */}
             <Link
@@ -147,7 +178,7 @@ export function Header() {
                 pathname === '/membership' ? 'text-gold' : 'text-text-soft'
               )}
             >
-              会员
+              {t('nav.membership')}
             </Link>
 
             {/* 会员标识（仅登录用户显示） */}
@@ -157,11 +188,11 @@ export function Header() {
                 {membership.tier === 'free' && (
                   <Link
                     href="/membership"
-                    aria-label="升级会员"
+                    aria-label={t('nav.upgrade')}
                     className="interactive inline-flex items-center gap-1 rounded-full border border-gold-dim bg-gold-soft/30 px-2.5 py-1 text-xs text-gold transition-all hover:bg-gold-soft/50"
                   >
                     <Crown size={12} />
-                    升级
+                    {t('nav.upgrade')}
                   </Link>
                 )}
               </>
@@ -169,7 +200,7 @@ export function Header() {
 
             <Link
               href="/settings"
-              aria-label="设置"
+              aria-label={t('nav.settings')}
               aria-current={isActive('/settings') ? 'page' : undefined}
               className={cn(
                 'flex h-9 w-9 items-center justify-center rounded-full transition-all hover:bg-bg-card',
@@ -179,11 +210,120 @@ export function Header() {
               <Settings size={18} />
             </Link>
 
+            {/* 语言切换器 */}
+            <LanguageSwitcher />
+
+            {/* 用户头像下拉菜单 / 登录按钮（桌面端） */}
+            {isAuthenticated && user ? (
+              <div className="relative hidden lg:block" ref={userMenuRef}>
+                {/* 触发器：头像 + 昵称 */}
+                <button
+                  type="button"
+                  onClick={() => setUserMenuOpen((prev) => !prev)}
+                  className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 transition-all hover:bg-bg-card"
+                  aria-label="用户菜单"
+                  aria-expanded={userMenuOpen}
+                  aria-haspopup="menu"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={user.avatar}
+                    alt={user.nickname}
+                    className="h-8 w-8 rounded-full border border-gold-dim/40 object-cover"
+                  />
+                  <span className="hidden max-w-[80px] truncate text-sm text-text-soft xl:inline-block">
+                    {user.nickname}
+                  </span>
+                  <ChevronDown
+                    size={14}
+                    className={cn(
+                      'hidden text-text-dim transition-transform xl:block',
+                      userMenuOpen && 'rotate-180'
+                    )}
+                  />
+                </button>
+
+                {/* 下拉菜单 */}
+                <AnimatePresence>
+                  {userMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                      transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                      className="absolute right-0 top-full z-50 mt-2 w-48 overflow-hidden rounded-xl border border-border bg-bg-soft shadow-[0_8px_32px_rgba(0,0,0,0.3)]"
+                      role="menu"
+                    >
+                      {/* 用户信息头部 */}
+                      <div className="border-b border-border px-4 py-3">
+                        <p className="truncate text-sm font-medium text-text">
+                          {user.nickname}
+                        </p>
+                        {user.phone && (
+                          <p className="truncate text-xs text-text-dim">
+                            {user.phone}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* 菜单项 */}
+                      <nav className="py-1">
+                        <Link
+                          href="/profile"
+                          onClick={() => setUserMenuOpen(false)}
+                          className={cn(
+                            'flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors hover:bg-bg-card',
+                            isActive('/profile')
+                              ? 'text-gold'
+                              : 'text-text-soft hover:text-gold'
+                          )}
+                          role="menuitem"
+                        >
+                          <UserIcon size={16} />
+                          {t('nav.profile')}
+                        </Link>
+                        <Link
+                          href="/settings"
+                          onClick={() => setUserMenuOpen(false)}
+                          className={cn(
+                            'flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors hover:bg-bg-card',
+                            isActive('/settings')
+                              ? 'text-gold'
+                              : 'text-text-soft hover:text-gold'
+                          )}
+                          role="menuitem"
+                        >
+                          <Settings size={16} />
+                          {t('nav.settings')}
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={handleLogout}
+                          className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-text-soft transition-colors hover:bg-bg-card hover:text-red"
+                          role="menuitem"
+                        >
+                          <LogOut size={16} />
+                          {t('nav.logout')}
+                        </button>
+                      </nav>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <Link
+                href="/auth"
+                className="hidden rounded-full border border-gold-dim bg-gold-soft/30 px-4 py-1.5 text-sm text-gold transition-all hover:bg-gold-soft/50 interactive lg:inline-block"
+              >
+                {t('nav.login')}
+              </Link>
+            )}
+
             {/* 移动端汉堡菜单按钮 */}
             <button
               type="button"
               onClick={() => setMobileOpen(true)}
-              aria-label="打开菜单"
+              aria-label={t('common.openMenu')}
               aria-expanded={mobileOpen}
               aria-controls="mobile-nav-drawer"
               className="flex h-9 w-9 items-center justify-center rounded-full text-text-soft transition-all hover:bg-bg-card hover:text-gold lg:hidden"
@@ -229,7 +369,7 @@ export function Header() {
                 <button
                   type="button"
                   onClick={() => setMobileOpen(false)}
-                  aria-label="关闭菜单"
+                  aria-label={t('common.closeMenu')}
                   className="flex h-9 w-9 items-center justify-center rounded-full text-text-soft transition-colors hover:bg-bg-card hover:text-gold"
                 >
                   <X size={20} />
@@ -239,7 +379,7 @@ export function Header() {
               {/* 导航链接 */}
               <nav
                 className="flex-1 space-y-1 overflow-y-auto px-4 py-6"
-                aria-label="移动端导航"
+                aria-label={t('language.title')}
               >
                 {NAV_LINKS.map((link) => {
                   const active = isActive(link.href);
@@ -255,7 +395,7 @@ export function Header() {
                           : 'border border-transparent text-text-soft hover:bg-bg-card hover:text-text'
                       )}
                     >
-                      {link.label}
+                      {t(link.labelKey)}
                     </Link>
                   );
                 })}
@@ -271,7 +411,7 @@ export function Header() {
                       : 'border border-transparent text-text-soft hover:bg-bg-card hover:text-text'
                   )}
                 >
-                  会员
+                  {t('nav.membership')}
                 </Link>
 
                 {/* 设置链接（移动端单独列出） */}
@@ -285,9 +425,69 @@ export function Header() {
                       : 'border border-transparent text-text-soft hover:bg-bg-card hover:text-text'
                   )}
                 >
-                  设置
+                  {t('nav.settings')}
                 </Link>
+
+                {/* 个人中心链接（移动端单独列出，仅登录用户） */}
+                {isAuthenticated && (
+                  <Link
+                    href="/profile"
+                    aria-current={isActive('/profile') ? 'page' : undefined}
+                    className={cn(
+                      'flex items-center rounded-lg px-4 py-3 text-sm transition-all',
+                      isActive('/profile')
+                        ? 'border border-gold-dim bg-gold-soft/30 text-gold'
+                        : 'border border-transparent text-text-soft hover:bg-bg-card hover:text-text'
+                    )}
+                  >
+                    {t('nav.profile')}
+                  </Link>
+                )}
               </nav>
+
+              {/* 用户区域（移动端） */}
+              <div className="border-t border-border px-4 py-4">
+                {isAuthenticated && user ? (
+                  <div className="space-y-3">
+                    {/* 用户信息 */}
+                    <div className="flex items-center gap-3 px-2">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={user.avatar}
+                        alt={user.nickname}
+                        className="h-10 w-10 rounded-full border border-gold-dim/40 object-cover"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium text-text">
+                          {user.nickname}
+                        </p>
+                        {user.phone && (
+                          <p className="truncate text-xs text-text-dim">
+                            {user.phone}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    {/* 退出登录 */}
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="flex w-full items-center gap-2 rounded-lg px-4 py-3 text-sm text-text-soft transition-all hover:bg-bg-card hover:text-red"
+                    >
+                      <LogOut size={16} />
+                      {t('nav.logout')}
+                    </button>
+                  </div>
+                ) : (
+                  <Link
+                    href="/auth"
+                    className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-gold-dim bg-gold-soft/30 px-4 py-3 text-sm text-gold transition-all hover:bg-gold-soft/50"
+                  >
+                    <UserIcon size={16} />
+                    {t('auth.loginRegister')}
+                  </Link>
+                )}
+              </div>
 
               {/* 底部信息 */}
               <div className="border-t border-border px-6 py-4">
