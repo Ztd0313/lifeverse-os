@@ -130,7 +130,7 @@ export function HomeContent() {
   return (
     <main className="relative z-10">
       {/* ===== Hero 区域 ===== */}
-      <section className="relative flex min-h-screen flex-col items-center justify-center px-6 pt-16 text-center">
+      <section className="relative flex min-h-screen flex-col items-center justify-center px-4 sm:px-6 pt-16 text-center">
         <motion.div
           variants={staggerContainer}
           initial="hidden"
@@ -147,7 +147,7 @@ export function HomeContent() {
           {/* 大标题 */}
           <motion.h1
             variants={fadeInUp}
-            className="h-display text-[80px] leading-none text-gradient-gold sm:text-[96px] md:text-[120px]"
+            className="h-display text-4xl leading-tight sm:text-6xl lg:text-[80px] lg:leading-none text-gradient-gold"
           >
             {t('home.title')}
           </motion.h1>
