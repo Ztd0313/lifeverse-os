@@ -1008,7 +1008,7 @@ export default function WisdomCouncilPage() {
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated, isInitialized, checkAuth } = useAuthStore();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { customAgents, loadFromStorage } = useAgentStore();
   const {
     phase,
@@ -1202,6 +1202,7 @@ export default function WisdomCouncilPage() {
           agentIds: selectedIds,
           councilType: 'wisdom',
           rounds: 2,
+          locale,
         }),
       });
       if (!response.ok) throw new Error('Council API failed');
