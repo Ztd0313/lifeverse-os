@@ -4,7 +4,6 @@ import * as React from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ArrowLeft,
   Send,
   Loader2,
   Clock,
@@ -492,13 +491,6 @@ export default function ReunionDialoguePage() {
           <div className="mx-auto max-w-3xl px-4 py-3">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-3">
-                <button
-                  onClick={() => router.push('/')}
-                  className="flex h-9 w-9 items-center justify-center rounded-full text-text-soft transition-colors hover:bg-bg-card hover:text-gold"
-                  aria-label={t('reunionDialogue.backHome')}
-                >
-                  <ArrowLeft size={18} />
-                </button>
                 <div className="flex items-center gap-2">
                   <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gold-soft">
                     <HeartHandshake size={18} className="text-gold" />
