@@ -22,6 +22,7 @@ import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth-store';
 import { useMembershipStore } from '@/stores/membership-store';
 import { useTranslation } from '@/lib/i18n';
+import { useI18nStore } from '@/stores/i18n-store';
 import { useAgentStore } from '@/stores/agent-store';
 import { useMarketplaceStore } from '@/stores/marketplace-store';
 import { MembershipBadge } from '@/components/membership/MembershipBadge';
@@ -132,6 +133,7 @@ export default function ProfilePage() {
   const router = useRouter();
   const pathname = usePathname();
   const { t } = useTranslation();
+  const locale = useI18nStore((s) => s.locale);
   const {
     user,
     isAuthenticated,
@@ -535,7 +537,7 @@ export default function ProfilePage() {
                   <span className="text-sm font-medium text-text">
                     {membership.expiresAt
                       ? new Date(membership.expiresAt).toLocaleDateString(
-                          'zh-CN',
+                          t('common.localeMap') as string,
                           {
                             year: 'numeric',
                             month: 'long',
