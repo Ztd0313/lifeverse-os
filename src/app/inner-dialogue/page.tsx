@@ -335,7 +335,7 @@ export default function InnerDialoguePage() {
           animate={{ opacity: 1, y: 0 }}
           className="shrink-0 border-b border-border bg-[rgba(6,7,16,0.6)] backdrop-blur-md"
         >
-          <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
+          <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3 flex-wrap gap-2">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => router.push('/')}
@@ -361,14 +361,14 @@ export default function InnerDialoguePage() {
             <div className="flex items-center gap-2">
               {/* ===== 用量指示器 ===== */}
               {dialogueCheck.remaining === -1 ? (
-                <span className="inline-flex items-center gap-1 rounded-full border border-[rgba(184,160,200,0.3)] bg-[rgba(184,160,200,0.12)] px-2.5 py-1 text-[11px] font-medium text-[#b8a0c8]">
+                <span className="inline-flex items-center gap-1 rounded-full border border-[rgba(184,160,200,0.3)] bg-[rgba(184,160,200,0.12)] px-2.5 py-1 text-xs font-medium text-[#b8a0c8]">
                   <Zap size={11} />
                   {t('innerDialogue.unlimited')}
                 </span>
               ) : (
                 <span
                   className={cn(
-                    'inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium',
+                    'inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium',
                     dialogueCheck.remaining === 0
                       ? 'border-[rgba(232,93,93,0.3)] bg-[rgba(232,93,93,0.12)] text-red'
                       : 'border-gold-dim bg-gold-soft text-gold'
@@ -387,7 +387,7 @@ export default function InnerDialoguePage() {
               {dialogueCheck.remaining === 0 && (
                 <Link
                   href="/membership"
-                  className="interactive inline-flex items-center gap-1 rounded-full border border-gold-dim bg-gold-soft/50 px-2.5 py-1 text-[11px] font-medium text-gold transition-colors hover:bg-gold-soft"
+                  className="interactive inline-flex items-center gap-1 rounded-full border border-gold-dim bg-gold-soft/50 px-2.5 py-1 text-xs font-medium text-gold transition-colors hover:bg-gold-soft"
                 >
                   <Zap size={11} />
                   {t('innerDialogue.upgrade')}
@@ -422,7 +422,7 @@ export default function InnerDialoguePage() {
                     <p className="text-xs font-medium text-text">
                       {t('innerDialogue.quotaExhausted')}
                     </p>
-                    <p className="text-[10px] text-text-dim">
+                    <p className="text-xs text-text-dim">
                       {getTierConfig(membership.tier).name} · {t('innerDialogue.quotaDetail', { tier: getTierConfig(membership.tier).name, limit: dialogueCheck.limit })}
                     </p>
                   </div>
@@ -577,7 +577,7 @@ export default function InnerDialoguePage() {
                 )}
               </Button>
             </div>
-            <p className="mt-2 text-[10px] text-text-dim">
+            <p className="mt-2 text-xs text-text-dim">
               {t('innerDialogue.inputHint')}
             </p>
           </div>
