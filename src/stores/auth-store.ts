@@ -16,6 +16,7 @@
 
 import { create } from 'zustand';
 import type { User } from '@/types';
+import { getT } from '@/stores/i18n-store';
 
 // ===== localStorage 持久化 =====
 
@@ -212,7 +213,7 @@ async function authFetch<T>(
   });
   const data = await res.json();
   if (!res.ok || !data.success) {
-    throw new Error(data.error || `请求失败: ${res.status}`);
+    throw new Error(data.error || getT()('auth.requestFailed', { status: res.status }));
   }
   return data as T;
 }
@@ -282,7 +283,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       // 4. 通过 openid 查找或创建用户，生成 JWT
 
       // 当前 mock：直接抛出提示
-      throw new Error('微信扫码登录暂未对接，请使用手机验证码登录');
+      throw new Error(getT()('auth.wechatNotAvailable'));
     } catch (error) {
       set({ isLoading: false });
       throw error;
@@ -401,7 +402,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
    */
   updateProfile: async (data) => {
     const { token } = get();
-    if (!token) throw new Error('未登录');
+    if (!token) throw new Error(getT()('auth.notLoggedIn'));
 
     set({ isLoading: true });
     try {
