@@ -8,7 +8,8 @@ import {
   useCallback,
   type CSSProperties,
 } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Maximize2, Minimize2 } from 'lucide-react';
 import type { RadarData } from '@/types';
 import { cn, radarPoint } from '@/lib/utils';
 
@@ -34,6 +35,10 @@ interface RadarChartProps {
   showValues?: boolean;
   /** 自定义类名 */
   className?: string;
+  /** 是否启用交互（hover tooltip、点击展开等），默认 true */
+  interactive?: boolean;
+  /** 点击维度时的回调 */
+  onDimensionClick?: (dimension: string, value: number) => void;
 }
 
 /**
@@ -65,7 +70,6 @@ const DEFAULT_COLORS = [
 
 /**
  * 每个维度对应的角度（度），从顶部 0° 开始顺时针
- * radarPoint 内部已处理 -90° 偏移，所以这里传入 0 表示正上方
  */
 const DIMENSION_ANGLES = [0, 72, 144, 216, 288];
 
@@ -96,7 +100,6 @@ function useCountUp(
       }
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      // easeOutCubic
       const eased = 1 - Math.pow(1 - progress, 3);
       setValue(Math.round(target * eased));
       if (progress < 1) {
@@ -133,6 +136,18 @@ function pointsToString(points: { x: number; y: number }[]): string {
 }
 
 /**
+ * Tooltip 状态
+ */
+interface TooltipState {
+  visible: boolean;
+  x: number;
+  y: number;
+  dimension: string;
+  value: number;
+  color: string;
+}
+
+/**
  * 单组数据集渲染
  */
 interface DatasetRendererProps {
@@ -145,6 +160,18 @@ interface DatasetRendererProps {
   animated: boolean;
   showValues: boolean;
   showDots: boolean;
+  interactive: boolean;
+  reducedMotion: boolean;
+  labels: string[];
+  onPointHover: (
+    dimension: string,
+    value: number,
+    color: string,
+    clientX: number,
+    clientY: number
+  ) => void;
+  onPointLeave: () => void;
+  onPointClick: (dimension: string, value: number) => void;
 }
 
 function DatasetRenderer({
@@ -157,8 +184,13 @@ function DatasetRenderer({
   animated,
   showValues,
   showDots,
+  interactive,
+  reducedMotion,
+  labels,
+  onPointHover,
+  onPointLeave,
+  onPointClick,
 }: DatasetRendererProps) {
-  // 计算数据多边形顶点
   const dataPoints = useMemo(() => {
     return DIMENSION_KEYS.map((key, i) =>
       radarPoint(dataset[key], DIMENSION_ANGLES[i], centerX, centerY, maxRadius)
@@ -171,28 +203,33 @@ function DatasetRenderer({
     [dataPoints]
   );
 
-  // 填充透明度：多组数据时递减
   const fillOpacity = 0.18 + index * 0.0;
+  const baseRadius = interactive ? 4 : 3;
+  const hoverRadius = 7;
+  const enterDelay = animated && !reducedMotion ? 0.3 + index * 0.2 : 0;
+  const dotDelay = animated && !reducedMotion ? 0.8 + index * 0.2 : 0;
 
   return (
     <g>
       {/* 数据多边形填充 */}
       <motion.polygon
-        points={pointsStr}
+        initial={
+          animated && !reducedMotion
+            ? { fillOpacity: 0, opacity: 0, points: pointsStr }
+            : false
+        }
+        animate={{ points: pointsStr, fillOpacity, opacity: 1 }}
         fill={color}
-        fillOpacity={fillOpacity}
         stroke={color}
         strokeWidth={2}
         strokeLinejoin="round"
-        initial={animated ? { fillOpacity: 0, opacity: 0 } : false}
-        animate={{ fillOpacity, opacity: 1 }}
         transition={{
-          duration: 0.8,
-          delay: animated ? 0.3 + index * 0.2 : 0,
-          ease: 'easeOut',
+          fillOpacity: { duration: 0.8, delay: enterDelay, ease: 'easeOut' },
+          opacity: { duration: 0.8, delay: enterDelay, ease: 'easeOut' },
+          points: { duration: 0.6, ease: 'easeInOut' },
         }}
         style={
-          animated
+          animated && !reducedMotion
             ? ({
                 strokeDasharray: perimeter,
                 strokeDashoffset: perimeter,
@@ -203,7 +240,7 @@ function DatasetRenderer({
       />
 
       {/* 描边动画的 keyframes */}
-      {animated && (
+      {animated && !reducedMotion && (
         <style>{`
           @keyframes radar-stroke-${index} {
             to { stroke-dashoffset: 0; }
@@ -216,17 +253,61 @@ function DatasetRenderer({
         dataPoints.map((p, i) => (
           <motion.circle
             key={i}
-            cx={p.x}
-            cy={p.y}
-            r={3}
             fill={color}
-            initial={animated ? { scale: 0, opacity: 0 } : false}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{
-              duration: 0.3,
-              delay: animated ? 0.8 + index * 0.2 + i * 0.05 : 0,
-              ease: 'backOut',
+            stroke="var(--bg-card)"
+            strokeWidth={1.5}
+            initial={
+              animated && !reducedMotion
+                ? { scale: 0, opacity: 0, cx: p.x, cy: p.y, r: baseRadius }
+                : false
+            }
+            animate={{ scale: 1, opacity: 1, cx: p.x, cy: p.y, r: baseRadius }}
+            whileHover={interactive ? { r: hoverRadius } : undefined}
+            style={{
+              cursor: interactive ? 'pointer' : 'default',
+              transformBox: 'fill-box',
+              transformOrigin: 'center',
             }}
+            transition={{
+              scale: {
+                duration: 0.3,
+                delay: dotDelay + i * 0.05,
+                ease: 'backOut',
+              },
+              opacity: {
+                duration: 0.3,
+                delay: dotDelay + i * 0.05,
+                ease: 'easeOut',
+              },
+              cx: { duration: 0.6, ease: 'easeOut' },
+              cy: { duration: 0.6, ease: 'easeOut' },
+              r: { duration: 0.2, ease: 'easeOut' },
+            }}
+            onMouseMove={
+              interactive
+                ? (e) => {
+                    onPointHover(
+                      labels[i] ?? DEFAULT_LABELS[i],
+                      dataset[DIMENSION_KEYS[i]],
+                      color,
+                      e.clientX,
+                      e.clientY
+                    );
+                  }
+                : undefined
+            }
+            onMouseLeave={interactive ? onPointLeave : undefined}
+            onClick={
+              interactive
+                ? (e) => {
+                    e.stopPropagation();
+                    onPointClick(
+                      labels[i] ?? DEFAULT_LABELS[i],
+                      dataset[DIMENSION_KEYS[i]]
+                    );
+                  }
+                : undefined
+            }
           />
         ))}
 
@@ -239,7 +320,7 @@ function DatasetRenderer({
             value={dataset[DIMENSION_KEYS[i]]}
             color={color}
             delay={animated ? 0.9 + index * 0.2 + i * 0.05 : 0}
-            animated={animated}
+            animated={animated && !reducedMotion}
           />
         ))}
     </g>
@@ -279,21 +360,18 @@ function ValueLabel({ point, value, color, delay, animated }: ValueLabelProps) {
 /**
  * 5 维价值雷达图（纯 SVG 实现）
  *
- * 支持 5 个维度（自由、财富、幸福、稳定、成长）的可视化，
- * 包含 5 层五边形网格、数据多边形描边动画、数值跳动动画，
- * 支持单组或多组数据叠加显示。
+ * 支持：
+ * - 多数据集叠加对比
+ * - 入场动画（描边 + 淡入 + 数据点弹出）
+ * - hover tooltip（交互模式）
+ * - 点击展开/收起（交互模式）
+ * - 多数据集切换时多边形顶点平滑过渡
+ * - prefers-reduced-motion 降级
  *
  * @example
  * ```tsx
- * // 单组数据
- * <RadarChart data={{ freedom: 80, wealth: 60, happiness: 90, stability: 70, growth: 85 }} />
- *
- * // 多组叠加
- * <RadarChart
- *   data={[agent1.radar, agent2.radar]}
- *   colors={['#c9a84c', '#5da0e8']}
- *   size={280}
- * />
+ * <RadarChart data={persona.radar} size={240} />
+ * <RadarChart data={[persona1.radar, persona2.radar]} interactive />
  * ```
  */
 export function RadarChart({
@@ -306,21 +384,58 @@ export function RadarChart({
   showGrid = true,
   showValues = false,
   className,
+  interactive = true,
+  onDimensionClick,
 }: RadarChartProps) {
-  // 标准化为数组
   const datasets = useMemo<RadarData[]>(
     () => (Array.isArray(data) ? data : [data]),
     [data]
   );
 
-  const svgRef = useRef<SVGSVGElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const leaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // 几何参数
+  const [expanded, setExpanded] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
+  const [tooltip, setTooltip] = useState<TooltipState>({
+    visible: false,
+    x: 0,
+    y: 0,
+    dimension: '',
+    value: 0,
+    color: '',
+  });
+
+  // prefers-reduced-motion 检测
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReducedMotion(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  // 清理 leave timeout
+  useEffect(() => {
+    return () => {
+      if (leaveTimeoutRef.current) {
+        clearTimeout(leaveTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // 几何参数（基于 size，不随 expanded 变化）
+  const effectiveSize = expanded ? Math.round(size * 1.5) : size;
   const padding = showLabels ? size * 0.18 : size * 0.06;
   const centerX = size / 2;
   const centerY = size / 2;
   const maxRadius = size / 2 - padding;
-  const gridLevels = 5;
+  const gridLevels = expanded ? 10 : 5;
+
+  // 网格刻度值
+  const tickValues = expanded
+    ? [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+    : [20, 40, 60, 80, 100];
 
   // 计算网格层顶点
   const gridPolygons = useMemo(() => {
@@ -335,7 +450,7 @@ export function RadarChart({
     return polygons;
   }, [centerX, centerY, maxRadius, gridLevels]);
 
-  // 计算轴线（从中心到各顶点）
+  // 计算轴线
   const axisLines = useMemo(() => {
     return DIMENSION_ANGLES.map((angle) => {
       const end = radarPoint(100, angle, centerX, centerY, maxRadius);
@@ -343,7 +458,7 @@ export function RadarChart({
     });
   }, [centerX, centerY, maxRadius]);
 
-  // 计算标签位置（顶点外侧）
+  // 计算标签位置
   const labelPositions = useMemo(() => {
     return DIMENSION_ANGLES.map((angle, i) => {
       const pos = radarPoint(118, angle, centerX, centerY, maxRadius);
@@ -351,35 +466,87 @@ export function RadarChart({
     });
   }, [centerX, centerY, maxRadius, labels]);
 
-  // 网格刻度数值（20, 40, 60, 80, 100）
-  const gridScaleValues = useMemo(() => {
-    return DIMENSION_ANGLES.map((angle) => {
-      const pos = radarPoint(100, angle, centerX, centerY, maxRadius);
-      return pos;
-    });
-  }, [centerX, centerY, maxRadius]);
+  // Tooltip handlers
+  const handlePointHover = useCallback(
+    (
+      dimension: string,
+      value: number,
+      color: string,
+      clientX: number,
+      clientY: number
+    ) => {
+      if (leaveTimeoutRef.current) {
+        clearTimeout(leaveTimeoutRef.current);
+        leaveTimeoutRef.current = null;
+      }
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      setTooltip({
+        visible: true,
+        x: clientX - rect.left,
+        y: clientY - rect.top,
+        dimension,
+        value,
+        color,
+      });
+    },
+    []
+  );
 
-  const handleMouseEnter = useCallback(() => {}, []);
+  const handlePointLeave = useCallback(() => {
+    leaveTimeoutRef.current = setTimeout(() => {
+      setTooltip((prev) => ({ ...prev, visible: false }));
+    }, 50);
+  }, []);
+
+  const handlePointClick = useCallback(
+    (dimension: string, value: number) => {
+      onDimensionClick?.(dimension, value);
+    },
+    [onDimensionClick]
+  );
+
+  const handleSvgClick = useCallback(() => {
+    if (interactive) {
+      setExpanded((prev) => !prev);
+    }
+  }, [interactive]);
+
+  const effectiveShowValues = showValues || (interactive && expanded);
 
   return (
-    <div
-      className={cn('inline-block', className)}
-      style={{ width: size, height: size }}
+    <motion.div
+      layout
+      className={cn('relative inline-block', className)}
+      style={{ width: effectiveSize, height: effectiveSize }}
+      transition={{ duration: 0.4, ease: 'easeInOut' }}
     >
+      {/* 展开/收起按钮 */}
+      {interactive && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setExpanded((prev) => !prev);
+          }}
+          className="absolute top-1 right-1 z-10 p-1.5 rounded-lg bg-bg-card/80 hover:bg-bg-card-hover text-text-soft hover:text-gold transition-colors"
+          aria-label={expanded ? '收起雷达图' : '展开雷达图'}
+        >
+          {expanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+        </button>
+      )}
+
       <svg
-        ref={svgRef}
-        width={size}
-        height={size}
+        width="100%"
+        height="100%"
         viewBox={`0 0 ${size} ${size}`}
         shapeRendering="geometricPrecision"
-        onMouseEnter={handleMouseEnter}
+        onClick={handleSvgClick}
+        style={{ cursor: interactive ? 'pointer' : 'default' }}
         role="img"
         aria-label="价值雷达图"
       >
         <title>价值雷达图</title>
-        <desc>
-          5 维价值雷达图，维度包括：{labels.join('、')}
-        </desc>
+        <desc>5 维价值雷达图，维度包括：{labels.join('、')}</desc>
 
         {/* 背景渐变圆 */}
         <defs>
@@ -388,9 +555,14 @@ export function RadarChart({
             <stop offset="100%" stopColor="rgba(201, 168, 76, 0)" />
           </radialGradient>
         </defs>
-        <circle cx={centerX} cy={centerY} r={maxRadius} fill="url(#radar-bg)" />
+        <circle
+          cx={centerX}
+          cy={centerY}
+          r={maxRadius}
+          fill="url(#radar-bg)"
+        />
 
-        {/* 网格层（同心五边形） */}
+        {/* 网格层 */}
         {showGrid && (
           <g className="radar-grid">
             {gridPolygons.map((points, level) => (
@@ -404,9 +576,9 @@ export function RadarChart({
               />
             ))}
             {/* 网格刻度数值 */}
-            {[20, 40, 60, 80, 100].map((val, idx) => {
+            {tickValues.map((val) => {
               const pos = radarPoint(
-                (val / 100) * 100,
+                val,
                 DIMENSION_ANGLES[0],
                 centerX,
                 centerY,
@@ -443,7 +615,7 @@ export function RadarChart({
           ))}
         </g>
 
-        {/* 数据多边形（可多组叠加） */}
+        {/* 数据多边形 */}
         <g className="radar-data">
           {datasets.map((dataset, index) => (
             <DatasetRenderer
@@ -455,8 +627,14 @@ export function RadarChart({
               centerY={centerY}
               maxRadius={maxRadius}
               animated={animated}
-              showValues={showValues}
+              showValues={effectiveShowValues}
               showDots={true}
+              interactive={interactive}
+              reducedMotion={reducedMotion}
+              labels={labels}
+              onPointHover={handlePointHover}
+              onPointLeave={handlePointLeave}
+              onPointClick={handlePointClick}
             />
           ))}
         </g>
@@ -489,7 +667,35 @@ export function RadarChart({
           fill="rgba(201, 168, 76, 0.4)"
         />
       </svg>
-    </div>
+
+      {/* Hover Tooltip */}
+      <AnimatePresence>
+        {tooltip.visible && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.2 }}
+            className="absolute z-20 pointer-events-none px-3 py-2 rounded-lg bg-bg-soft border border-gold-dim shadow-lg whitespace-nowrap"
+            style={{
+              left: tooltip.x + 12,
+              top: tooltip.y - 8,
+              transform: 'translateY(-100%)',
+            }}
+          >
+            <div className="text-xs text-text-soft mb-0.5">
+              {tooltip.dimension}
+            </div>
+            <div
+              className="text-sm font-bold"
+              style={{ color: tooltip.color }}
+            >
+              {tooltip.value}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }
 
