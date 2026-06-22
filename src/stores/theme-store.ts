@@ -19,6 +19,21 @@ import { persist } from 'zustand/middleware';
 
 export type Theme = 'dark' | 'light';
 
+/**
+ * 触发主题切换过渡动画。
+ *
+ * 给 <html> 添加 `theme-transitioning` class（globals.css 中定义了对应的
+ * 全局过渡样式），400ms 后移除该 class，使主题切换拥有平滑的颜色过渡。
+ */
+function triggerThemeTransition(): void {
+  if (typeof document === 'undefined') return;
+  const root = document.documentElement;
+  root.classList.add('theme-transitioning');
+  window.setTimeout(() => {
+    root.classList.remove('theme-transitioning');
+  }, 400);
+}
+
 interface ThemeStore {
   /** 当前主题 */
   theme: Theme;
@@ -32,9 +47,14 @@ export const useThemeStore = create<ThemeStore>()(
   persist(
     (set) => ({
       theme: 'dark',
-      toggleTheme: () =>
-        set((state) => ({ theme: state.theme === 'dark' ? 'light' : 'dark' })),
-      setTheme: (theme) => set({ theme }),
+      toggleTheme: () => {
+        triggerThemeTransition();
+        set((state) => ({ theme: state.theme === 'dark' ? 'light' : 'dark' }));
+      },
+      setTheme: (theme) => {
+        triggerThemeTransition();
+        set({ theme });
+      },
     }),
     {
       name: 'lifeverse-theme',
