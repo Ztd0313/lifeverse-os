@@ -3,7 +3,8 @@
 import { useMemo, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Sparkles, Globe, Loader2 } from 'lucide-react';
+import { Sparkles, Globe, Loader2, Play } from 'lucide-react';
+import Link from 'next/link';
 import { ParticleBackground } from '@/components/effects/ParticleBackground';
 import { Header } from '@/components/layout/Header';
 import { PlanetNav } from '@/components/memory/PlanetNav';
@@ -153,6 +154,22 @@ export default function MemoryPage() {
                 {currentPlanet.name} · {currentPlanet.description}
               </motion.div>
             )}
+          </motion.section>
+
+          {/* ===== 记忆回放入口 ===== */}
+          <motion.section
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="flex justify-center"
+          >
+            <Link
+              href="/memory/replay"
+              className="interactive inline-flex items-center gap-2 rounded-full border border-gold-dim bg-gold-soft/20 px-5 py-2.5 text-sm text-gold transition-all hover:bg-gold-soft/40"
+            >
+              <Play size={16} />
+              {t('nav.memoryReplay')}
+            </Link>
           </motion.section>
 
           {/* ===== 2. 星球导航 ===== */}
