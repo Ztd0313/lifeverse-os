@@ -4,7 +4,6 @@ import * as React from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ArrowLeft,
   Send,
   Loader2,
   Baby,
@@ -379,13 +378,6 @@ export default function DreamDialoguePage() {
         >
           <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3 flex-wrap gap-2">
             <div className="flex items-center gap-3">
-              <button
-                onClick={() => router.push('/dream')}
-                className="flex h-9 w-9 items-center justify-center rounded-full text-text-soft transition-colors hover:bg-bg-card hover:text-gold"
-                aria-label={t('dreamArchive.back') || t('innerDialogue.backHome')}
-              >
-                <ArrowLeft size={18} />
-              </button>
               <div className="flex items-center gap-2">
                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gold-soft">
                   <Baby size={18} className="text-gold" />
