@@ -10,19 +10,23 @@
  * - 修订号：Bug 修复和小优化
  */
 
-export const APP_VERSION = 'v5.2.0';
+export const APP_VERSION = 'v5.3.0';
 
 export const VERSION_INFO = {
   version: APP_VERSION,
   buildDate: '2026-06-23',
   codename: 'Life OS',
   changes: [
-    '修复议会一键使用按钮（替换无效成员ID）',
-    '修复召集议会按钮无反馈问题（新增Toast提示）',
-    'Header新增用户头像下拉菜单（个人中心入口）',
-    '改善登录态保持（Serverless容错+Token自动续期）',
-    '新增i18n国际化系统（中文/英文/日语/韩语）',
-    'Header/Footer集成语言切换器',
+    '移动端全站响应式适配',
+    '新增viewport meta标签（修复移动端缩放问题）',
+    'MeetingRoom环形布局动态自适应屏幕尺寸',
+    'AgentCard卡片宽度响应式改造',
+    'Header移动端优化（右侧元素移入抽屉、safe-area适配、触摸目标增大）',
+    '历史页接入全局Header导航',
+    '首页Hero标题移动端自适应',
+    '对话页header添加flex-wrap防溢出',
+    '全局文字最小11px、触摸目标最小36px',
+    '设置页/个人中心/议会页触摸目标优化',
   ],
 };
 
