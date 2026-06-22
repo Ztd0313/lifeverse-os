@@ -19,6 +19,7 @@ import {
   fadeInUp,
 } from '@/lib/motion/variants';
 import { getPlanetMeta } from '@/lib/mock-memories';
+import { useTranslation } from '@/lib/i18n';
 
 /**
  * 记忆星球（Memory Planet）页面
@@ -36,6 +37,7 @@ import { getPlanetMeta } from '@/lib/mock-memories';
 export default function MemoryPage() {
   const router = useRouter();
   const pathname = usePathname();
+  const { t } = useTranslation();
   const { isAuthenticated, isInitialized, checkAuth } = useAuthStore();
   const {
     memories,
@@ -91,7 +93,7 @@ export default function MemoryPage() {
         <main className="relative z-10 flex min-h-screen items-center justify-center">
           <div className="flex flex-col items-center gap-4 text-text-soft">
             <Loader2 size={32} className="animate-spin text-gold" />
-            <p className="text-sm">正在验证登录状态...</p>
+            <p className="text-sm">{t('memory.verifying')}</p>
           </div>
         </main>
       </>
@@ -130,10 +132,10 @@ export default function MemoryPage() {
             </div>
 
             <h1 className="font-serif text-4xl text-text sm:text-5xl">
-              <span className="text-gradient-gold">记忆星球</span>
+              <span className="text-gradient-gold">{t('memory.title')}</span>
             </h1>
             <p className="mt-3 text-sm text-text-soft sm:text-base">
-              让过去有形状
+              {t('memory.subtitle')}
             </p>
 
             {/* 当前星球描述 */}
@@ -174,10 +176,10 @@ export default function MemoryPage() {
               type="button"
               onClick={openUpload}
               className="sr-only"
-              aria-label="打开记录此刻表单"
+              aria-label={t('memory.openRecordForm')}
             >
               <Sparkles size={16} />
-              记录此刻
+              {t('memory.recordNow')}
             </button>
           </section>
 
@@ -190,10 +192,10 @@ export default function MemoryPage() {
                     className="h-3 w-3 rounded-full"
                     style={{ backgroundColor: currentPlanet?.color }}
                   />
-                  {currentPlanet?.name}的记忆
+                  {currentPlanet?.name}{t('memory.memoriesOf')}
                 </h2>
                 <p className="mt-1 text-xs text-text-dim">
-                  共 {planetMemories.length} 条记忆 · 点击卡片查看详情
+                  {t('memory.memoryCount', { count: planetMemories.length })}
                 </p>
               </div>
             </div>
@@ -224,10 +226,10 @@ export default function MemoryPage() {
                   <Sparkles size={20} className="text-text-dim" />
                 </span>
                 <p className="text-sm text-text-soft">
-                  这个星球上还没有记忆
+                  {t('memory.emptyTitle')}
                 </p>
                 <p className="mt-1 text-xs text-text-dim">
-                  点击上方"记录此刻"，让第一段记忆降落于此
+                  {t('memory.emptyHint')}
                 </p>
               </motion.div>
             )}
