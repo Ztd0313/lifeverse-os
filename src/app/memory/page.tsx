@@ -126,12 +126,12 @@ export default function MemoryPage() {
           >
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-gold-dim bg-gold-soft/30 px-4 py-1.5">
               <Globe size={14} className="text-gold" />
-              <span className="text-[11px] font-medium text-gold">
+              <span className="text-xs font-medium text-gold">
                 Memory Planet
               </span>
             </div>
 
-            <h1 className="font-serif text-4xl text-text sm:text-5xl">
+            <h1 className="font-serif text-3xl sm:text-4xl text-text sm:text-5xl">
               <span className="text-gradient-gold">{t('memory.title')}</span>
             </h1>
             <p className="mt-3 text-sm text-text-soft sm:text-base">
