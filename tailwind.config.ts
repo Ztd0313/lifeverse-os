@@ -29,6 +29,22 @@ const config: Config = {
           soft: 'var(--gold-soft)',
           dim: 'var(--gold-dim)',
         },
+        'space-blue': {
+          DEFAULT: 'var(--space-blue)',
+          soft: 'var(--space-blue-soft)',
+          dim: 'var(--space-blue-dim)',
+          bright: 'var(--space-blue-bright)',
+        },
+        'life-purple': {
+          DEFAULT: 'var(--life-purple)',
+          soft: 'var(--life-purple-soft)',
+          dim: 'var(--life-purple-dim)',
+          bright: 'var(--life-purple-bright)',
+        },
+        'star-gold': {
+          DEFAULT: 'var(--star-gold)',
+          soft: 'var(--star-gold-soft)',
+        },
         red: 'var(--red)',
         blue: 'var(--blue)',
         green: 'var(--green)',
@@ -44,6 +60,19 @@ const config: Config = {
       borderRadius: {
         DEFAULT: '14px',
         sm: '8px',
+        lg: 'var(--radius-lg)',
+        xl: 'var(--radius-xl)',
+      },
+      fontSize: {
+        'display': ['var(--font-display-size)', { lineHeight: 'var(--font-display-line-height)', fontWeight: 'var(--font-display-weight)' }],
+        'title': ['var(--font-title-size)', { lineHeight: 'var(--font-title-line-height)', fontWeight: 'var(--font-title-weight)' }],
+        'subtitle': ['var(--font-subtitle-size)', { lineHeight: 'var(--font-subtitle-line-height)', fontWeight: 'var(--font-subtitle-weight)' }],
+      },
+      spacing: {
+        'xs': 'var(--space-xs)',
+        'sm': 'var(--space-sm)',
+        'xl': 'var(--space-xl)',
+        '2xl': 'var(--space-2xl)',
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
