@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ArrowLeft, BookOpen, Star, MessageSquare, Sparkles } from 'lucide-react';
+import { BookOpen, Star, MessageSquare, Sparkles } from 'lucide-react';
 import HistoryList from '@/components/council/HistoryList';
 import { Header } from '@/components/layout/Header';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -164,14 +164,7 @@ export default function HistoryPage() {
       <div className="min-h-screen bg-bg pt-16">
       {/* Top bar */}
       <header className="sticky top-16 z-20 border-b border-border bg-bg/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-          <button
-            onClick={() => router.push('/')}
-            className="inline-flex items-center gap-1.5 text-sm text-text-soft transition-colors hover:text-gold"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            {t('history.backHome')}
-          </button>
+        <div className="mx-auto flex max-w-5xl items-center justify-end px-4 py-3">
           <button
             onClick={() => router.push('/council')}
             className="inline-flex items-center gap-1.5 rounded-lg bg-gold-soft px-3 py-1.5 text-sm text-gold transition-colors hover:bg-gold hover:text-bg"
