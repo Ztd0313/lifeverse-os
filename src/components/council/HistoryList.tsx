@@ -15,14 +15,15 @@ import {
 } from 'lucide-react';
 import type { HistoryEntry, CouncilType } from '@/types';
 import { cn, formatDate, truncate } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 
 // ===== Council Type Labels =====
 
 const COUNCIL_TYPE_LABELS: Record<CouncilType, string> = {
-  wisdom: '智慧议会',
-  future: '未来议会',
-  inner: '内心议会',
-  reunion: '重逢议会',
+  wisdom: 'council.historyList.typeWisdom',
+  future: 'council.historyList.typeFuture',
+  inner: 'council.historyList.typeInner',
+  reunion: 'council.historyList.typeReunion',
 };
 
 const COUNCIL_TYPE_COLORS: Record<CouncilType, string> = {
@@ -77,8 +78,9 @@ interface HistoryCardProps {
 }
 
 function HistoryCard({ entry, onSelect, onDelete, onFavorite }: HistoryCardProps) {
+  const { t } = useTranslation();
   const typeColor = COUNCIL_TYPE_COLORS[entry.councilType];
-  const typeLabel = COUNCIL_TYPE_LABELS[entry.councilType];
+  const typeLabel = t(COUNCIL_TYPE_LABELS[entry.councilType]);
 
   return (
     <motion.div
@@ -132,7 +134,7 @@ function HistoryCard({ entry, onSelect, onDelete, onFavorite }: HistoryCardProps
                 onFavorite?.(entry.id);
               }}
               className="rounded p-1 transition-colors hover:bg-gold-soft"
-              aria-label={entry.favorited ? '取消收藏' : '收藏'}
+              aria-label={entry.favorited ? t('council.historyList.unfavorite') : t('council.historyList.favorite')}
             >
               <motion.div
                 whileTap={{ scale: 0.8 }}
@@ -157,7 +159,7 @@ function HistoryCard({ entry, onSelect, onDelete, onFavorite }: HistoryCardProps
                 onDelete?.(entry.id);
               }}
               className="rounded p-1 transition-colors hover:bg-red/10"
-              aria-label="删除"
+              aria-label={t('council.historyList.delete')}
             >
               <Trash2 className="h-4 w-4 text-text-dim transition-colors hover:text-red" />
             </button>
@@ -203,6 +205,7 @@ export default function HistoryList({
   onDelete,
   onFavorite,
 }: HistoryListProps) {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTag, setActiveTag] = useState<string | null>(null);
 
@@ -296,11 +299,10 @@ export default function HistoryList({
         </motion.div>
 
         <h3 className="mb-2 h-title text-xl text-text">
-          还没有命运议会的记录
+          {t('council.historyList.emptyTitle')}
         </h3>
         <p className="mb-6 max-w-sm text-sm leading-relaxed text-text-dim">
-          召集你的智慧议会或未来议会，让不同视角的声音为你推演命运。
-          每一次对话都会被记录在这里，成为你生命时间线的一部分。
+          {t('council.historyList.emptyDesc')}
         </p>
 
         {/* CTA 按钮组 */}
@@ -310,14 +312,14 @@ export default function HistoryList({
             className="inline-flex items-center justify-center gap-2 rounded-[14px] bg-gold px-6 py-2.5 text-sm font-medium text-bg transition-all hover:shadow-[0_0_20px_var(--shadow-gold-strong)]"
           >
             <Sparkles className="h-4 w-4" />
-            召开智慧议会
+            {t('council.historyList.startWisdom')}
           </Link>
           <Link
             href="/council/future"
             className="inline-flex items-center justify-center gap-2 rounded-[14px] border border-border bg-bg-card px-6 py-2.5 text-sm font-medium text-text-soft transition-all hover:border-gold-dim hover:text-gold"
           >
             <Clock className="h-4 w-4" />
-            召开未来议会
+            {t('council.historyList.startFuture')}
           </Link>
         </div>
       </div>
@@ -335,14 +337,14 @@ export default function HistoryList({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="搜索议会记录..."
+            placeholder={t('council.historyList.searchPlaceholder')}
             className="w-full rounded-lg border border-border bg-bg-card py-2.5 pl-10 pr-10 text-sm text-text placeholder:text-text-dim focus:border-gold-dim focus:outline-none"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-text-dim hover:text-text"
-              aria-label="清空搜索"
+              aria-label={t('council.historyList.clearSearch')}
             >
               <X className="h-4 w-4" />
             </button>
@@ -361,7 +363,7 @@ export default function HistoryList({
                   : 'border border-border bg-bg-card text-text-dim hover:text-gold'
               )}
             >
-              全部
+              {t('council.historyList.all')}
             </button>
             {allTags.map((tag) => (
               <button
@@ -385,7 +387,7 @@ export default function HistoryList({
       <div className="flex items-center gap-2 text-xs text-text-dim">
         <MessageSquare className="h-3.5 w-3.5" />
         <span>
-          {filteredEntries.length} / {entries.length} 条记录
+          {t('council.historyList.recordCount', { filtered: filteredEntries.length, total: entries.length })}
         </span>
       </div>
 
@@ -394,7 +396,7 @@ export default function HistoryList({
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <Search className="mb-3 h-10 w-10 text-text-dim" />
           <p className="text-sm text-text-dim">
-            未找到匹配 &ldquo;{searchQuery}&rdquo; 的记录
+            {t('council.historyList.noMatch', { query: searchQuery })}
           </p>
           <button
             onClick={() => {
@@ -403,7 +405,7 @@ export default function HistoryList({
             }}
             className="mt-3 text-xs text-gold hover:underline"
           >
-            清空筛选
+            {t('council.historyList.clearFilter')}
           </button>
         </div>
       ) : (
