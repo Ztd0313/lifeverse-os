@@ -36,6 +36,7 @@ import {
   type UnifiedCouncilMember,
 } from '@/lib/council-members';
 import type { RecommendedCombination } from '@/lib/ai/agent-templates';
+import type { CouncilResult } from '@/lib/ai/mock-data';
 import { RecommendedCombinations } from '@/components/council/RecommendedCombinations';
 import DestinyReportComponent from '@/components/council/DestinyReport';
 import TimelineView from '@/components/council/TimelineView';
@@ -1039,6 +1040,13 @@ export default function WisdomCouncilPage() {
     type: 'warning' | 'success';
   } | null>(null);
 
+  /** 议会 API 调用结果（来自 /api/council） */
+  const [councilResult, setCouncilResult] = useState<CouncilResult | null>(null);
+  /** 是否正在调用议会 API */
+  const [isLoading, setIsLoading] = useState(false);
+  /** 议会 API 调用错误信息 */
+  const [loadError, setLoadError] = useState<string | null>(null);
+
   /** 问题输入区域 ref（用于滚动定位） */
   const questionInputRef = useRef<HTMLDivElement>(null);
   /** 成员选择区域 ref（用于滚动定位） */
@@ -1075,14 +1083,27 @@ export default function WisdomCouncilPage() {
     }
   }, [isInitialized, isAuthenticated, router, pathname]);
 
-  // Initialize mock messages when entering r1
+  // Initialize messages when entering r1
+  // 优先使用 API 返回的消息；若 API 未返回或失败，降级到 MOCK_MESSAGES
   const initializeMessages = useCallback(() => {
     if (messages.length === 0) {
-      MOCK_MESSAGES.forEach((msg) => {
-        addMessage(msg);
-      });
+      if (councilResult?.messages && councilResult.messages.length > 0) {
+        councilResult.messages.forEach((msg) => {
+          addMessage({
+            personaId: msg.personaId,
+            personaName: msg.personaName,
+            role: msg.role,
+            content: msg.content,
+            round: msg.round,
+          });
+        });
+      } else {
+        MOCK_MESSAGES.forEach((msg) => {
+          addMessage(msg);
+        });
+      }
     }
-  }, [messages.length, addMessage]);
+  }, [messages.length, addMessage, councilResult]);
 
   useEffect(() => {
     if (phase === 'r1' || phase === 'r2' || phase === 'r3') {
@@ -1147,7 +1168,7 @@ export default function WisdomCouncilPage() {
   const canSubmit = questionInput.trim().length > 0 && canStart;
 
   /** 处理开始议会 */
-  const handleStartCouncil = () => {
+  const handleStartCouncil = async () => {
     if (!canStart) {
       showToast('请先选择 3-6 位议会成员', 'warning');
       memberSelectionRef.current?.scrollIntoView({
@@ -1168,6 +1189,32 @@ export default function WisdomCouncilPage() {
     const selectedMembers = getMembersByIds(unifiedMembers, selectedIds);
     const selectedPersonas = selectedMembers.map(unifiedMemberToPersona);
     setPersonas(selectedPersonas);
+
+    // 调用 AI 议会 API
+    setIsLoading(true);
+    setLoadError(null);
+    try {
+      const response = await fetch('/api/council', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: questionInput,
+          agentIds: selectedIds,
+          councilType: 'wisdom',
+          rounds: 2,
+        }),
+      });
+      if (!response.ok) throw new Error('Council API failed');
+      const result = (await response.json()) as CouncilResult;
+      setCouncilResult(result);
+    } catch (error) {
+      console.error('Council API error:', error);
+      setLoadError('议会召唤失败，请重试');
+      showToast('议会召唤失败，请重试', 'warning');
+      setIsLoading(false);
+      return;
+    }
+    setIsLoading(false);
     setPhase('ritual');
   };
 
@@ -1183,10 +1230,17 @@ export default function WisdomCouncilPage() {
       nextRound();
       setPhase(`r${currentRound + 1}` as 'r2' | 'r3');
     } else {
-      // Generate report
-      const mockReport = createMockReport(question || questionInput);
-      setReport(mockReport);
-      setTimeline(MOCK_TIMELINE);
+      // 生成报告：优先使用 API 返回的报告和时间线，降级到 Mock
+      if (councilResult?.report) {
+        setReport(councilResult.report);
+      } else {
+        setReport(createMockReport(question || questionInput));
+      }
+      if (councilResult?.timeline) {
+        setTimeline(councilResult.timeline);
+      } else {
+        setTimeline(MOCK_TIMELINE);
+      }
       setPhase('report');
     }
   };
@@ -1198,6 +1252,9 @@ export default function WisdomCouncilPage() {
     setQuestionInput('');
     setSelectedIds([]);
     setActiveCombinationId(null);
+    setCouncilResult(null);
+    setIsLoading(false);
+    setLoadError(null);
     setPhase('idle');
   };
 
@@ -1258,31 +1315,50 @@ export default function WisdomCouncilPage() {
           {/* IDLE: Question input + Recommended combinations + Member selection */}
           {phase === 'idle' && (
             <motion.div key="idle" className="space-y-10">
-              <div ref={questionInputRef}>
-                <QuestionInput
-                  question={questionInput}
-                  setQuestion={setQuestionInput}
-                  onSubmit={handleStartCouncil}
-                  canSubmit={canSubmit}
-                />
-              </div>
+              {isLoading ? (
+                // 议会 API 调用中：显示加载动画
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex flex-col items-center justify-center py-20"
+                >
+                  <Loader2 className="h-10 w-10 animate-spin text-gold" />
+                  <p className="mt-4 text-sm text-text-soft">
+                    正在召唤议会成员...
+                  </p>
+                  <p className="mt-1 text-xs text-text-dim">
+                    AI 智者正在集结，请稍候
+                  </p>
+                </motion.div>
+              ) : (
+                <>
+                  <div ref={questionInputRef}>
+                    <QuestionInput
+                      question={questionInput}
+                      setQuestion={setQuestionInput}
+                      onSubmit={handleStartCouncil}
+                      canSubmit={canSubmit}
+                    />
+                  </div>
 
-              {/* 推荐组合区域 */}
-              <RecommendedCombinations
-                onUseCombination={handleUseCombination}
-                activeCombinationId={activeCombinationId}
-              />
+                  {/* 推荐组合区域 */}
+                  <RecommendedCombinations
+                    onUseCombination={handleUseCombination}
+                    activeCombinationId={activeCombinationId}
+                  />
 
-              {/* 成员选择区域 */}
-              <div ref={memberSelectionRef}>
-                <MemberSelection
-                  members={unifiedMembers}
-                  selectedIds={selectedIds}
-                  onToggle={toggleMember}
-                  onStart={handleStartCouncil}
-                  canStart={canStart}
-                />
-              </div>
+                  {/* 成员选择区域 */}
+                  <div ref={memberSelectionRef}>
+                    <MemberSelection
+                      members={unifiedMembers}
+                      selectedIds={selectedIds}
+                      onToggle={toggleMember}
+                      onStart={handleStartCouncil}
+                      canStart={canStart}
+                    />
+                  </div>
+                </>
+              )}
             </motion.div>
           )}
 
@@ -1307,6 +1383,17 @@ export default function WisdomCouncilPage() {
           {/* REPORT: Destiny report */}
           {phase === 'report' && report && (
             <motion.div key="report" className="space-y-6">
+              {/* 演示数据提示：当 API 返回 isMock 为 true 时显示 */}
+              {councilResult?.isMock && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center justify-center gap-2 rounded-lg border border-amber-400/40 bg-amber-500/10 px-4 py-2 text-xs text-amber-200"
+                >
+                  <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                  <span>演示数据（未接入AI）</span>
+                </motion.div>
+              )}
               <DestinyReportComponent
                 report={report}
                 onShare={handleShare}
