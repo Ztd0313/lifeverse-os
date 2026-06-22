@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ArrowLeft, BookOpen, Star, MessageSquare, Sparkles } from 'lucide-react';
 import HistoryList from '@/components/council/HistoryList';
+import { Header } from '@/components/layout/Header';
 import type { HistoryEntry } from '@/types';
 import { useTranslation } from '@/lib/i18n';
 
@@ -150,9 +151,11 @@ export default function HistoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-bg">
+    <>
+      <Header />
+      <div className="min-h-screen bg-bg pt-16">
       {/* Top bar */}
-      <header className="sticky top-0 z-20 border-b border-border bg-bg/80 backdrop-blur-md">
+      <header className="sticky top-16 z-20 border-b border-border bg-bg/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
           <button
             onClick={() => router.push('/')}
@@ -234,5 +237,6 @@ export default function HistoryPage() {
         />
       </main>
     </div>
+    </>
   );
 }
