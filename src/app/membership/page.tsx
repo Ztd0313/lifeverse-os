@@ -251,7 +251,7 @@ export default function MembershipPage() {
 
         {/* ===== 三档定价卡片 ===== */}
         <section className="mx-auto max-w-7xl px-6 py-10">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:grid-cols-3">
             {tiers.map((config, index) => {
               const buttonInfo = getTierButton(config.tier);
               const isCurrent = config.tier === currentTier;
