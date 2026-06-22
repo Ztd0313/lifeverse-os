@@ -10,23 +10,18 @@
  * - 修订号：Bug 修复和小优化
  */
 
-export const APP_VERSION = 'v5.3.0';
+export const APP_VERSION = 'v5.4.0';
 
 export const VERSION_INFO = {
   version: APP_VERSION,
   buildDate: '2026-06-23',
   codename: 'Life OS',
   changes: [
-    '移动端全站响应式适配',
-    '新增viewport meta标签（修复移动端缩放问题）',
-    'MeetingRoom环形布局动态自适应屏幕尺寸',
-    'AgentCard卡片宽度响应式改造',
-    'Header移动端优化（右侧元素移入抽屉、safe-area适配、触摸目标增大）',
-    '历史页接入全局Header导航',
-    '首页Hero标题移动端自适应',
-    '对话页header添加flex-wrap防溢出',
-    '全局文字最小11px、触摸目标最小36px',
-    '设置页/个人中心/议会页触摸目标优化',
+    '智慧议会接入真实AI（DeepSeek）— 议会对话/命运报告/时间线均由AI生成',
+    '未来议会接入真实AI — 时间自己发言/雷达图/反思内容由AI生成',
+    '移除硬编码API Key（安全修复）',
+    '议会API失败时自动降级到Mock数据',
+    '新增AI加载状态和isMock提示标签',
   ],
 };
 
